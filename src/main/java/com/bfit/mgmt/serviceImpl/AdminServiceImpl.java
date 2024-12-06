@@ -15,10 +15,16 @@ public class AdminServiceImpl implements AdminService{
 	
 	@Autowired
 	private AdminRepo adminRepo;
+	
+	@Override
+	public Admin saveAdmin(Admin admin) {
+		return adminRepo.save(admin);
+	}
 
 	@Override
 	public Optional<Admin> getDataById(UUID id) {
 		return adminRepo.findById(id);
 	}
 
+	
 }
