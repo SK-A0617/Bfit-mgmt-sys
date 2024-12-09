@@ -2,31 +2,31 @@ package com.bfit.mgmt.util;
 
 import java.time.LocalDateTime;
 
+import org.springframework.http.HttpStatus;
+
 public class ApiResponse<T> {
-	
-	private String status;
+
 	private String message;
+	private HttpStatus httpStatus;
 	private T data;
 	private LocalDateTime timestamp;
-	
-	public ApiResponse(String status, T data) {
-		this.status = status;
+
+	// constructors
+
+	public ApiResponse(HttpStatus httpStatus, T data) {
+		this.httpStatus = httpStatus;
 		this.data = data;
 		this.timestamp = LocalDateTime.now();
 	}
-	
-	public ApiResponse(String status, String message) {
-		this.status = status;
-		this.message = message;
-		this.timestamp = LocalDateTime.now();
+
+	// Getters and Setters
+
+	public HttpStatus getHttpStatus() {
+		return httpStatus;
 	}
 
-	public String getStatus() {
-		return status;
-	}
-
-	public void setStatus(String status) {
-		this.status = status;
+	public void setHttpStatus(HttpStatus httpStatus) {
+		this.httpStatus = httpStatus;
 	}
 
 	public String getMessage() {
@@ -52,6 +52,5 @@ public class ApiResponse<T> {
 	public void setTimestamp(LocalDateTime timestamp) {
 		this.timestamp = timestamp;
 	}
-	
 
 }
