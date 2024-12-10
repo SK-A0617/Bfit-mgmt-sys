@@ -15,46 +15,46 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.bfit.mgmt.entity.Admin;
-import com.bfit.mgmt.service.AdminService;
+import com.bfit.mgmt.entity.Member;
+import com.bfit.mgmt.service.MemberService;
 import com.bfit.mgmt.util.ApiResponse;
 import com.bfit.mgmt.util.Constants;
 
 @RestController
 @RequestMapping(path = Constants.REQPATH)
-public class AdminController {
+public class MemberController {
 
 	@Autowired
-	private AdminService adminService;
-	
-	@PostMapping("/saveAdmin")
-	public ApiResponse<Admin> saveAdmin(@RequestBody Admin admin){
-		var data = adminService.saveAdmin(admin);
+	private MemberService memberService;
+
+	@PostMapping("/saveMember")
+	public ApiResponse<Member> saveMember(@RequestBody Member member) {
+		var data = memberService.saveMember(member);
 		return new ApiResponse<>(HttpStatus.OK, data);
 	}
-	
-	@GetMapping("/getById")
-	public ApiResponse<Admin> getAdminDataById(@RequestParam UUID id){
-		var data = adminService.getDataById(id);
+
+	@GetMapping("/getMemberById")
+	public ApiResponse<Member> getMemberById(@RequestParam UUID id) {
+		var data = memberService.getMemberById(id);
 		return new ApiResponse<>(HttpStatus.OK, data);
 	}
-	
-	@GetMapping("/getAllAdminList")
-	public ApiResponse<List<Admin>> getAdminList(){
-		var data = adminService.getAdminList();
+
+	@GetMapping("/getAllMemberList")
+	public ApiResponse<List<Member>> getMemberList() {
+		var data = memberService.getMemberList();
 		return new ApiResponse<>(HttpStatus.OK, data);
 	}
-	
-	@PutMapping("/updateAdmin/{id}")
-	public ApiResponse<Admin> updateAdmin(@PathVariable UUID id,@RequestBody Admin admin){
-		var data = adminService.updateAdmin(id,admin);
+
+	@PutMapping("/updateMember/{id}")
+	public ApiResponse<Member> updateMember(@PathVariable UUID id, @RequestBody Member member) {
+		var data = memberService.updateMember(id, member);
 		return new ApiResponse<>(HttpStatus.OK, data);
 	}
-	
-	@DeleteMapping("/deleteAdmin/{id}")
-	public ApiResponse<String> dltAdminById(@PathVariable UUID id){
-		var data = adminService.dltAdminById(id);
+
+	@DeleteMapping("/deleteMemeber/{id}")
+	public ApiResponse<String> dltMemberById(@PathVariable UUID id) {
+		var data = memberService.dltMemberById(id);
 		return new ApiResponse<>(HttpStatus.OK, data);
 	}
-	
+
 }
