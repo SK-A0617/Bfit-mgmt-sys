@@ -13,61 +13,57 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
-import lombok.AllArgsConstructor;
+import jakarta.validation.constraints.Email;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-@AllArgsConstructor
 @NoArgsConstructor
 @Data
 @Entity
-@Table(name = "admin")
-public class Admin {
+@Table(name = "members")
+public class Member {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.AUTO)
 	private UUID id;
 
-	@Column(name = "first_name", nullable = false)
-	private String firstName;
+	@Column(name = "profile")
+	private String profile;
 
-	@Column(name = "last_name", nullable = false)
-	private String lastName;
+	@Column(name = "memeber_name", nullable = false)
+	private String memeberName;
 
-	@Column(name = "email", nullable = false, unique = true)
+	@Email
+	@Column(name = "email", nullable = false)
 	private String email;
-
-	@Column(name = "password", nullable = false)
-	private String password;
 
 	@Column(name = "phone_number", nullable = false)
 	private String phoneNumber;
 
-	@Column(name = "role")
-	private String role;
+	@Column(name = "status", nullable = false)
+	private Boolean status;
 
-	@Column(name = "starting_date")
-	private LocalDate startingDate;
+	@Column(name = "joining_date", nullable = false)
+	private LocalDate joiningDate;
 
 	@CreationTimestamp
-	@Column(name = "created_at", updatable = false)
+	@Column(name = "created_at", nullable = false)
 	private Timestamp createdAt;
 
 	@UpdateTimestamp
-	@Column(name = "updated_at")
+	@Column(name = "updated_at", nullable = false)
 	private Timestamp updatedAt;
 	
-	
-	public Admin(String firstName, String lastName, String email, String password, String phoneNumber, String role,
-			LocalDate startingDate) {
+
+	public Member(String profile, String memeberName, String email, String phoneNumber, Boolean status,
+			LocalDate joiningDate) {
 		super();
-		this.firstName = firstName;
-		this.lastName = lastName;
+		this.profile = profile;
+		this.memeberName = memeberName;
 		this.email = email;
-		this.password = password;
 		this.phoneNumber = phoneNumber;
-		this.role = role;
-		this.startingDate = startingDate;
+		this.status = status;
+		this.joiningDate = joiningDate;
 	}
 
 }
