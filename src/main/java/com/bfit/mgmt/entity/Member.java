@@ -6,6 +6,7 @@ import java.util.UUID;
 
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
+import org.springframework.web.multipart.MultipartFile;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -13,6 +14,7 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import jakarta.persistence.Transient;
 import jakarta.validation.constraints.Email;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -24,14 +26,17 @@ import lombok.NoArgsConstructor;
 public class Member {
 
 	@Id
-	@GeneratedValue(strategy = GenerationType.AUTO)
+	@GeneratedValue(strategy = GenerationType.UUID)
 	private UUID id;
 
-	@Column(name = "profile")
-	private String profile;
+	@Column(name = "profile_url")
+	private String profileUrl;
+	
+	@Transient
+	private MultipartFile profileImg;
 
-	@Column(name = "memeber_name", nullable = false)
-	private String memeberName;
+	@Column(name = "member_name", nullable = false)
+	private String memberName;
 
 	@Email
 	@Column(name = "email", nullable = false)
@@ -53,17 +58,17 @@ public class Member {
 	@UpdateTimestamp
 	@Column(name = "updated_at", nullable = false)
 	private Timestamp updatedAt;
-	
 
-	public Member(String profile, String memeberName, String email, String phoneNumber, Boolean status,
-			LocalDate joiningDate) {
+	public Member(UUID id, String profileUrl, String memberName, @Email String email,
+			String phoneNumber, Boolean status, LocalDate joiningDate) {
 		super();
-		this.profile = profile;
-		this.memeberName = memeberName;
+		this.id = id;
+		this.profileUrl = profileUrl;
+		this.memberName = memberName;
 		this.email = email;
 		this.phoneNumber = phoneNumber;
 		this.status = status;
 		this.joiningDate = joiningDate;
 	}
-
+	
 }
