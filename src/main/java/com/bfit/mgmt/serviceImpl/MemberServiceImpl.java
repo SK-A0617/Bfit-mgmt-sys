@@ -8,6 +8,7 @@ import org.hibernate.procedure.ParameterMisuseException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.ObjectUtils;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.bfit.mgmt.config.S3ServiceConfig;
 import com.bfit.mgmt.entity.Member;
@@ -38,15 +39,15 @@ public class MemberServiceImpl implements MemberService {
 	}
 
 	@Override
-	public Member saveMember(Member member) {
+	public Member saveMember(MultipartFile profileImg,Member member) {
 		try {
 			UUID id = UUID.randomUUID();
-			String profileUrl = s3ServiceConfig.uploadFile(member.getProfileImg(), id.toString());
+			String profileUrl = s3ServiceConfig.uploadFile(profileImg, id.toString());
 			var joiningDate = LocalDate.now();
 			Member memberReqBdy = new Member(id, profileUrl, member.getMemberName(), member.getEmail(),
 					member.getPhoneNumber(), member.getStatus(), joiningDate);
 			return memberRepo.save(memberReqBdy);
-		} catch (Exception exception) {
+		} catch (Exception e) {
 			throw new RuntimeException();
 		}
 	}
