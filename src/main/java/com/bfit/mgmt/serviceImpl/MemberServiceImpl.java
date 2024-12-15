@@ -14,6 +14,7 @@ import com.bfit.mgmt.config.S3ServiceConfig;
 import com.bfit.mgmt.entity.Member;
 import com.bfit.mgmt.repo.MemberRepo;
 import com.bfit.mgmt.service.MemberService;
+import com.bfit.mgmt.util.ApiResponse;
 
 @Service
 public class MemberServiceImpl implements MemberService {
