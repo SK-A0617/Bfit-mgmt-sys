@@ -22,8 +22,6 @@ import com.bfit.mgmt.entity.Member;
 import com.bfit.mgmt.service.MemberService;
 import com.bfit.mgmt.util.ApiResponse;
 import com.bfit.mgmt.util.Constants;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 @RestController

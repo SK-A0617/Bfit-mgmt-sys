@@ -11,12 +11,10 @@ import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3ClientBuilder;
 
 import jakarta.annotation.PostConstruct;
-//import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
-//import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
-//import software.amazon.awssdk.regions.Region;
-//import software.amazon.awssdk.services.s3.S3Client;
+import lombok.extern.slf4j.Slf4j;
 
 @Configuration
+@Slf4j
 public class S3Config {
 
 	@Value("${cloud.aws.credentials.access-key}")
@@ -30,18 +28,8 @@ public class S3Config {
 
 	@PostConstruct
 	public void checkProperties() {
-		System.out.println("Access Key: " + accessKey);
-		System.out.println("Secret Key: " + secretKey);
-		System.out.println("Region: " + region);
+		log.info("bucket connected with region :"+ region);
 	}
-
-//	@Bean
-//	S3Client s3Client() {
-//		System.out.println("Region >>>"+region);
-//		AwsBasicCredentials awsBasicCredentials = AwsBasicCredentials.create(accessKey, secretKey);
-//		return S3Client.builder().credentialsProvider(StaticCredentialsProvider.create(awsBasicCredentials))
-//				.region(Region.of(System.getProperty(region))).build();
-//	}
 
 	@Bean
 	AmazonS3 generateS3Client() {
