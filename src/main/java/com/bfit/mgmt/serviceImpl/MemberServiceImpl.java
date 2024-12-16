@@ -1,5 +1,6 @@
 package com.bfit.mgmt.serviceImpl;
 
+import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
@@ -14,7 +15,6 @@ import com.bfit.mgmt.config.S3ServiceConfig;
 import com.bfit.mgmt.entity.Member;
 import com.bfit.mgmt.repo.MemberRepo;
 import com.bfit.mgmt.service.MemberService;
-import com.bfit.mgmt.util.ApiResponse;
 
 @Service
 public class MemberServiceImpl implements MemberService {
@@ -40,23 +40,23 @@ public class MemberServiceImpl implements MemberService {
 	}
 
 	@Override
-	public Member saveMember(MultipartFile profileImg,Member member) {
+	public Member saveMember(MultipartFile profileImg, Member member) {
 		try {
-			UUID id = UUID.randomUUID();
-			String profileUrl = s3ServiceConfig.uploadFile(profileImg, id.toString());
+			String profileUrl = s3ServiceConfig.uploadFile(profileImg);
 			var joiningDate = LocalDate.now();
-			Member memberReqBdy = new Member(id, profileUrl, member.getMemberName(), member.getEmail(),
-					member.getPhoneNumber(), member.getStatus(), joiningDate);
+			var createdAt = new Timestamp(System.currentTimeMillis());
+			Member memberReqBdy = new Member(profileUrl, member.getMemberName(), member.getEmail(),
+					member.getPhoneNumber(), member.getStatus(), joiningDate, createdAt, createdAt);
 			return memberRepo.save(memberReqBdy);
 		} catch (Exception e) {
-			throw new RuntimeException();
+			throw new RuntimeException("Failed to save Member: " + e.getMessage(), e);
 		}
 	}
 
 	@Override
 	public Member updateMember(UUID id, Member updatedMemeber) {
 		try {
-			String profileUrl = s3ServiceConfig.uploadFile(updatedMemeber.getProfileImg(), id.toString());
+			String profileUrl = s3ServiceConfig.uploadFile(updatedMemeber.getProfileImg());
 			var memberRes = memberRepo.findById(id);
 			if (memberRes.isPresent()) {
 				memberRes.map(memberObj -> {

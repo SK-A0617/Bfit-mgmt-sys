@@ -26,7 +26,8 @@ import lombok.NoArgsConstructor;
 public class Member {
 
 	@Id
-	@GeneratedValue(strategy = GenerationType.UUID)
+	@GeneratedValue(strategy = GenerationType.AUTO)
+	@Column(name = "id", updatable = false, nullable = false)
 	private UUID id;
 
 	@Column(name = "profile_url")
@@ -59,16 +60,19 @@ public class Member {
 	@Column(name = "updated_at", nullable = false)
 	private Timestamp updatedAt;
 
-	public Member(UUID id, String profileUrl, String memberName, @Email String email,
-			String phoneNumber, Boolean status, LocalDate joiningDate) {
+	public Member(String profileUrl, String memberName, @Email String email,
+			String phoneNumber, Boolean status, LocalDate joiningDate, Timestamp createdAt, Timestamp updatedAt) {
 		super();
-		this.id = id;
 		this.profileUrl = profileUrl;
 		this.memberName = memberName;
 		this.email = email;
 		this.phoneNumber = phoneNumber;
 		this.status = status;
 		this.joiningDate = joiningDate;
+		this.createdAt = createdAt;
+		this.updatedAt = updatedAt;
 	}
+	
+	
 	
 }

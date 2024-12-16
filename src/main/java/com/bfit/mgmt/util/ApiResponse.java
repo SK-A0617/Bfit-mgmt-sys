@@ -29,14 +29,6 @@ public class ApiResponse<T> {
 		this.httpStatus = httpStatus;
 	}
 
-	public String getMessage() {
-		return message;
-	}
-
-	public void setMessage(String message) {
-		this.message = message;
-	}
-
 	public T getData() {
 		return data;
 	}

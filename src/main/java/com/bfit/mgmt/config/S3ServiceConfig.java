@@ -3,6 +3,7 @@ package com.bfit.mgmt.config;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -28,13 +29,11 @@ public class S3ServiceConfig {
 	@Value("${aws.s3.base-url}")
 	private String s3BaseUrl;
 
-	public String uploadFile(MultipartFile multipartFile, String memberId) {
+	public String uploadFile(MultipartFile multipartFile) {
 		try {
 			File file = convertMultipartFileToFile(multipartFile);
-			String fileName = memberId + "_" + multipartFile.getOriginalFilename();
-//			s3Client.putObject(PutObjectRequest.builder().bucket(bucketName).key(fileName)
-//					.contentType(file.getContentType()).build(),
-//					RequestBody.fromInputStream(file.getInputStream(), file.getSize()));
+			UUID id = UUID.randomUUID();
+			String fileName = id + "_" + multipartFile.getOriginalFilename();
 			s3Client.putObject(new PutObjectRequest(bucketName, fileName, file));
 			file.delete();
 			log.info(fileName + "File Uploaded Successfully");
