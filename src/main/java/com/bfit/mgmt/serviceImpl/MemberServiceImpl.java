@@ -29,12 +29,19 @@ public class MemberServiceImpl implements MemberService {
 	public Member getMemberById(UUID id) {
 		try {
 			var response = memberRepo.findById(id);
+			System.out.println(">>>>>>>"+response.get());
+			var profileUrl = response.get().getProfileUrl();
+			System.out.println(">>>>>>>"+profileUrl);
+			var fileName = profileUrl.substring(profileUrl.lastIndexOf("/")+1);
+			System.out.println(">>>>>>>"+fileName);
+			var profilePath = s3ServiceConfig.getFile(fileName);
+			System.out.println(">>>> getting profile path from s3:"+profilePath);
 			if (ObjectUtils.isEmpty(response)) {
 				return (Member) response.orElse(null);
 			}
 			return (Member) response.get();
 		} catch (Exception e) {
-			throw new RuntimeException();
+			throw new RuntimeException("Failed to get Member: " + e.getMessage(), e);
 
 		}
 	}
