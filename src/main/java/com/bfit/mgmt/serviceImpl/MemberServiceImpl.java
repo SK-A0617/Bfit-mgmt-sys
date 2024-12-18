@@ -5,7 +5,6 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
 
-import org.hibernate.procedure.ParameterMisuseException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.ObjectUtils;
@@ -29,13 +28,13 @@ public class MemberServiceImpl implements MemberService {
 	public Member getMemberById(UUID id) {
 		try {
 			var response = memberRepo.findById(id);
-			System.out.println(">>>>>>>"+response.get());
+			System.out.println(">>>>>>>" + response.get());
 			var profileUrl = response.get().getProfileUrl();
-			System.out.println(">>>>>>>"+profileUrl);
-			var fileName = profileUrl.substring(profileUrl.lastIndexOf("/")+1);
-			System.out.println(">>>>>>>"+fileName);
+			System.out.println(">>>>>>>" + profileUrl);
+			var fileName = profileUrl.substring(profileUrl.lastIndexOf("/") + 1);
+			System.out.println(">>>>>>>" + fileName);
 			var profilePath = s3ServiceConfig.getFile(fileName);
-			System.out.println(">>>> getting profile path from s3:"+profilePath);
+			System.out.println(">>>> getting profile path from s3:" + profilePath);
 			if (ObjectUtils.isEmpty(response)) {
 				return (Member) response.orElse(null);
 			}
@@ -61,37 +60,47 @@ public class MemberServiceImpl implements MemberService {
 	}
 
 	@Override
-	public Member updateMember(UUID id, Member updatedMemeber) {
+	public Member updateMember(UUID id, MultipartFile profileImg, Member updatedMemeber) {
 		try {
-			String profileUrl = s3ServiceConfig.uploadFile(updatedMemeber.getProfileImg());
 			var memberRes = memberRepo.findById(id);
 			if (memberRes.isPresent()) {
-				memberRes.map(memberObj -> {
-					memberObj.setProfileUrl(profileUrl);
-					memberObj.setMemberName(updatedMemeber.getMemberName());
-					memberObj.setEmail(updatedMemeber.getEmail());
-					memberObj.setPhoneNumber(updatedMemeber.getPhoneNumber());
-					memberObj.setStatus(updatedMemeber.getStatus());
-					return memberRepo.save(memberObj);
-				}).orElseThrow(() -> new RuntimeException("Member not found with id : {}" + id));
+				var extMemberbj = memberRes.get();
+				if (profileImg != null && !profileImg.isEmpty()) {
+					if (extMemberbj.getProfileUrl() != null) {
+						s3ServiceConfig.deleteFile(extMemberbj.getProfileUrl());
+					}
+					String newProfileUrl = s3ServiceConfig.uploadFile(profileImg);
+					extMemberbj.setProfileUrl(newProfileUrl);
+				}
+				extMemberbj.setMemberName(updatedMemeber.getMemberName());
+				extMemberbj.setEmail(updatedMemeber.getEmail());
+				extMemberbj.setPhoneNumber(updatedMemeber.getPhoneNumber());
+				extMemberbj.setStatus(updatedMemeber.getStatus());
+
+				return memberRepo.save(extMemberbj);
+			} else {
+				throw new RuntimeException("Member not found with id :" + id);
 			}
 		} catch (Exception e) {
-			throw new RuntimeException();
+			throw new RuntimeException("Failed to update Member: " + e.getMessage(), e);
 		}
-		return null;
 	}
 
 	@Override
-	public String dltMemberById(UUID id) {
+	public void dltMemberById(UUID id) {
 		try {
-			if (ObjectUtils.isEmpty(id)) {
-				throw new ParameterMisuseException("Request ID not found");
+			var memberPresentRes = memberRepo.findById(id);
+			if(memberPresentRes.isPresent()) {
+				if(memberPresentRes.get().getProfileUrl()!=null) {
+					s3ServiceConfig.deleteFile(memberPresentRes.get().getProfileUrl());					
+				}
+				memberRepo.deleteById(id);
+			}else {
+				throw new RuntimeException("Member not found with id :" + id);
 			}
-			memberRepo.deleteById(id);
 		} catch (Exception e) {
-			throw new RuntimeException();
+			throw new RuntimeException("Failed to delete Member: " + e.getMessage(), e);
 		}
-		return "Data Deleted Successfully";
 	}
 
 	@Override
