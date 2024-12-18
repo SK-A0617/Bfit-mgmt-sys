@@ -48,8 +48,7 @@ public class S3ServiceConfig {
 			log.error("File upload failed", e);
 			throw new RuntimeException("File upload failed", e);
 		}
-		
-		
+
 	}
 
 	private File convertMultipartFileToFile(MultipartFile file) {
@@ -62,29 +61,28 @@ public class S3ServiceConfig {
 		}
 		return convertedFile;
 	}
-	
+
 	public byte[] getFile(String fileName) {
-		S3Object s3Object = s3Client.getObject(bucketName, fileName);
-		S3ObjectInputStream inputStream = s3Object.getObjectContent();
-		System.out.println(">>>>>>"+inputStream);
-		try {
-			byte[] content = IOUtils.toByteArray(inputStream);
-			System.out.println(">>>>"+content);
-			return content;
+		try (S3Object s3Object = s3Client.getObject(bucketName, fileName);
+				S3ObjectInputStream inputStream = s3Object.getObjectContent()) {
+			return IOUtils.toByteArray(inputStream);
+		} catch (AmazonS3Exception e) {
+			log.error("Amazon S3 error while fetching file '{}': {}", fileName, e.getMessage(), e);
+			throw new RuntimeException("Error fetching file from S3: " + e.getErrorMessage(), e);
 		} catch (IOException e) {
-			e.printStackTrace();
+			log.error("IO error while reading file from S3: {}", fileName, e);
+			throw new RuntimeException("IO error fetching file from S3", e);
 		}
-		return null;
 	}
-	
+
 	public void deleteFile(String fileUrl) {
-	    try {
-	        String fileName = fileUrl.substring(fileUrl.lastIndexOf("/") + 1);
-	        s3Client.deleteObject(bucketName, fileName);
-	        log.info("Existing profile deleted succeffully");
-	    } catch (Exception e) {
-	        throw new RuntimeException("Failed to delete file: " + e.getMessage(), e);
-	    }
+		try {
+			String fileName = fileUrl.substring(fileUrl.lastIndexOf("/") + 1);
+			s3Client.deleteObject(bucketName, fileName);
+			log.info("Existing profile deleted succeffully");
+		} catch (Exception e) {
+			throw new RuntimeException("Failed to delete file: " + e.getMessage(), e);
+		}
 	}
 
 }
