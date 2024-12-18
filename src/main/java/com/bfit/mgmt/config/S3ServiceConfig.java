@@ -76,5 +76,15 @@ public class S3ServiceConfig {
 		}
 		return null;
 	}
+	
+	public void deleteFile(String fileUrl) {
+	    try {
+	        String fileName = fileUrl.substring(fileUrl.lastIndexOf("/") + 1);
+	        s3Client.deleteObject(bucketName, fileName);
+	        log.info("Existing profile deleted succeffully");
+	    } catch (Exception e) {
+	        throw new RuntimeException("Failed to delete file: " + e.getMessage(), e);
+	    }
+	}
 
 }
