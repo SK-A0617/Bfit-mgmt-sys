@@ -4,9 +4,9 @@ import java.time.LocalDateTime;
 
 import org.springframework.http.HttpStatus;
 
-import lombok.Data;
+import lombok.Getter;
 
-@Data
+@Getter
 public class ApiResponse<T> {
 
 	private String message;
@@ -19,6 +19,7 @@ public class ApiResponse<T> {
 	public ApiResponse(HttpStatus httpStatus, T data) {
 		this.statusCode = httpStatus.value();
 		this.data = data;
+		this.message = "";
 		this.timestamp = LocalDateTime.now();
 	}
 

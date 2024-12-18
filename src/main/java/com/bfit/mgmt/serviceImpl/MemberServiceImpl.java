@@ -7,7 +7,6 @@ import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.util.ObjectUtils;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.bfit.mgmt.config.S3ServiceConfig;
@@ -15,7 +14,10 @@ import com.bfit.mgmt.entity.Member;
 import com.bfit.mgmt.repo.MemberRepo;
 import com.bfit.mgmt.service.MemberService;
 
+import lombok.extern.slf4j.Slf4j;
+
 @Service
+@Slf4j
 public class MemberServiceImpl implements MemberService {
 
 	@Autowired
@@ -28,20 +30,13 @@ public class MemberServiceImpl implements MemberService {
 	public Member getMemberById(UUID id) {
 		try {
 			var response = memberRepo.findById(id);
-			System.out.println(">>>>>>>" + response.get());
-			var profileUrl = response.get().getProfileUrl();
-			System.out.println(">>>>>>>" + profileUrl);
-			var fileName = profileUrl.substring(profileUrl.lastIndexOf("/") + 1);
-			System.out.println(">>>>>>>" + fileName);
-			var profilePath = s3ServiceConfig.getFile(fileName);
-			System.out.println(">>>> getting profile path from s3:" + profilePath);
-			if (ObjectUtils.isEmpty(response)) {
-				return (Member) response.orElse(null);
+			if (response.isEmpty()) {
+				throw new RuntimeException("Member not found with id :" + id);
 			}
-			return (Member) response.get();
+			return response.get();
 		} catch (Exception e) {
+			log.error("Error fetching member by ID: {}", e.getMessage(), e);
 			throw new RuntimeException("Failed to get Member: " + e.getMessage(), e);
-
 		}
 	}
 
@@ -90,12 +85,12 @@ public class MemberServiceImpl implements MemberService {
 	public void dltMemberById(UUID id) {
 		try {
 			var memberPresentRes = memberRepo.findById(id);
-			if(memberPresentRes.isPresent()) {
-				if(memberPresentRes.get().getProfileUrl()!=null) {
-					s3ServiceConfig.deleteFile(memberPresentRes.get().getProfileUrl());					
+			if (memberPresentRes.isPresent()) {
+				if (memberPresentRes.get().getProfileUrl() != null) {
+					s3ServiceConfig.deleteFile(memberPresentRes.get().getProfileUrl());
 				}
 				memberRepo.deleteById(id);
-			}else {
+			} else {
 				throw new RuntimeException("Member not found with id :" + id);
 			}
 		} catch (Exception e) {
@@ -111,5 +106,5 @@ public class MemberServiceImpl implements MemberService {
 			throw new RuntimeException();
 		}
 	}
-
+	
 }
