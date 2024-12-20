@@ -26,35 +26,35 @@ public class AdminController {
 
 	@Autowired
 	private AdminService adminService;
-	
+
 	@PostMapping("/saveAdmin")
-	public ApiResponse<Admin> saveAdmin(@RequestBody Admin admin){
+	public ApiResponse<Admin> saveAdmin(@RequestBody Admin admin) {
 		var data = adminService.saveAdmin(admin);
 		return new ApiResponse<>(HttpStatus.OK, data);
 	}
-	
-	@GetMapping("/getById")
-	public ApiResponse<Admin> getAdminDataById(@RequestParam UUID id){
+
+	@GetMapping("/getAdminById")
+	public ApiResponse<Admin> getAdminDataById(@RequestParam UUID id) {
 		var data = adminService.getDataById(id);
 		return new ApiResponse<>(HttpStatus.OK, data);
 	}
-	
+
 	@GetMapping("/getAllAdminList")
-	public ApiResponse<List<Admin>> getAdminList(){
+	public ApiResponse<List<Admin>> getAdminList() {
 		var data = adminService.getAdminList();
 		return new ApiResponse<>(HttpStatus.OK, data);
 	}
-	
+
 	@PutMapping("/updateAdmin/{id}")
-	public ApiResponse<Admin> updateAdmin(@PathVariable UUID id,@RequestBody Admin admin){
-		var data = adminService.updateAdmin(id,admin);
+	public ApiResponse<Admin> updateAdmin(@PathVariable UUID id, @RequestBody Admin admin) {
+		var data = adminService.updateAdmin(id, admin);
 		return new ApiResponse<>(HttpStatus.OK, data);
 	}
-	
+
 	@DeleteMapping("/deleteAdmin/{id}")
-	public ApiResponse<String> dltAdminById(@PathVariable UUID id){
-		var data = adminService.dltAdminById(id);
-		return new ApiResponse<>(HttpStatus.OK, data);
+	public ApiResponse<Void> dltAdminById(@PathVariable UUID id) {
+		adminService.dltAdminById(id);
+		return new ApiResponse<>(HttpStatus.OK, "Admin deleted successfully");
 	}
-	
+
 }

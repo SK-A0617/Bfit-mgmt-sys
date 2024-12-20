@@ -13,7 +13,7 @@ public interface AdminService {
 	
 	Admin updateAdmin(UUID id, Admin admin);
 	
-	String dltAdminById(UUID id);
+	void dltAdminById(UUID id);
 	
 	List<Admin> getAdminList();
 	

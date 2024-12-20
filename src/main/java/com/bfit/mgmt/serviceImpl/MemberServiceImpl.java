@@ -101,9 +101,10 @@ public class MemberServiceImpl implements MemberService {
 	@Override
 	public List<Member> getMemberList() {
 		try {
-			return memberRepo.findAll();
+			var response = memberRepo.findAll();
+			return response;
 		} catch (Exception e) {
-			throw new RuntimeException();
+			throw new RuntimeException("Failed to get member list: " + e.getMessage(), e);
 		}
 	}
 	
