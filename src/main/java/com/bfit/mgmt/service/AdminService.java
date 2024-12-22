@@ -7,7 +7,7 @@ import com.bfit.mgmt.entity.Admin;
 
 public interface AdminService {
 
-	Admin getDataById(UUID id);
+	Admin getAdminById(UUID id);
 
 	Admin saveAdmin(Admin admin);
 	

@@ -28,11 +28,8 @@ public class Admin {
 	@GeneratedValue(strategy = GenerationType.AUTO)
 	private UUID id;
 
-	@Column(name = "first_name", nullable = false)
-	private String firstName;
-
-	@Column(name = "last_name", nullable = false)
-	private String lastName;
+	@Column(name = "name", nullable = false)
+	private String name;
 
 	@Column(name = "email", nullable = false, unique = true)
 	private String email;
@@ -56,17 +53,14 @@ public class Admin {
 	@UpdateTimestamp
 	@Column(name = "updated_at")
 	private Timestamp updatedAt;
-	
-	
-	public Admin(String firstName, String lastName, String email, String password, String phoneNumber, String role,
-			LocalDate startingDate) {
+
+	public Admin(String name, String email, String password, String phoneNumber, LocalDate startingDate) {
 		super();
-		this.firstName = firstName;
-		this.lastName = lastName;
+		this.name = name;
 		this.email = email;
 		this.password = password;
 		this.phoneNumber = phoneNumber;
-		this.role = role;
+		// this.role = role;
 		this.startingDate = startingDate;
 	}
 
