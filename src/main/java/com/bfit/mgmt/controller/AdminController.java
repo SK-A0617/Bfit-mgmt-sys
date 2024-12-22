@@ -33,9 +33,9 @@ public class AdminController {
 		return new ApiResponse<>(HttpStatus.OK, data);
 	}
 	
-	@GetMapping("/getById")
-	public ApiResponse<Admin> getAdminDataById(@RequestParam UUID id){
-		var data = adminService.getDataById(id);
+	@GetMapping("/getAdminById")
+	public ApiResponse<Admin> getAdminById(@RequestParam UUID id){
+		var data = adminService.getAdminById(id);
 		return new ApiResponse<>(HttpStatus.OK, data);
 	}
 	

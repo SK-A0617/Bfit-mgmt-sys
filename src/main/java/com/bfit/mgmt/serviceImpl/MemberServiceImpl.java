@@ -31,6 +31,7 @@ public class MemberServiceImpl implements MemberService {
 		try {
 			var response = memberRepo.findById(id);
 			if (response.isEmpty()) {
+				log.error("Not found error getting member by ID: {}", id);
 				throw new RuntimeException("Member not found with id :" + id);
 			}
 			return response.get();
@@ -50,7 +51,8 @@ public class MemberServiceImpl implements MemberService {
 					member.getPhoneNumber(), member.getStatus(), joiningDate, createdAt, createdAt);
 			return memberRepo.save(memberReqBdy);
 		} catch (Exception e) {
-			throw new RuntimeException("Failed to save Member: " + e.getMessage(), e);
+			log.error("Failed error while persist member: {}", e.getMessage(), e);
+			throw new RuntimeException("Failed to save member: " + e.getMessage(), e);
 		}
 	}
 
@@ -59,25 +61,27 @@ public class MemberServiceImpl implements MemberService {
 		try {
 			var memberRes = memberRepo.findById(id);
 			if (memberRes.isPresent()) {
-				var extMemberbj = memberRes.get();
+				var extMemberObj = memberRes.get();
 				if (profileImg != null && !profileImg.isEmpty()) {
-					if (extMemberbj.getProfileUrl() != null) {
-						s3ServiceConfig.deleteFile(extMemberbj.getProfileUrl());
+					if (extMemberObj.getProfileUrl() != null) {
+						s3ServiceConfig.deleteFile(extMemberObj.getProfileUrl());
 					}
 					String newProfileUrl = s3ServiceConfig.uploadFile(profileImg);
-					extMemberbj.setProfileUrl(newProfileUrl);
+					extMemberObj.setProfileUrl(newProfileUrl);
 				}
-				extMemberbj.setMemberName(updatedMemeber.getMemberName());
-				extMemberbj.setEmail(updatedMemeber.getEmail());
-				extMemberbj.setPhoneNumber(updatedMemeber.getPhoneNumber());
-				extMemberbj.setStatus(updatedMemeber.getStatus());
+				extMemberObj.setMemberName(updatedMemeber.getMemberName());
+				extMemberObj.setEmail(updatedMemeber.getEmail());
+				extMemberObj.setPhoneNumber(updatedMemeber.getPhoneNumber());
+				extMemberObj.setStatus(updatedMemeber.getStatus());
 
-				return memberRepo.save(extMemberbj);
+				return memberRepo.save(extMemberObj);
 			} else {
-				throw new RuntimeException("Member not found with id :" + id);
+				log.error("Not found error getting member by ID: {}", id);
+				throw new RuntimeException("Member not found with ID :" + id);
 			}
 		} catch (Exception e) {
-			throw new RuntimeException("Failed to update Member: " + e.getMessage(), e);
+			log.error("Failed to update member by ID:{} " , e.getMessage(), e);
+			throw new RuntimeException("Failed to update Member: {}" + e.getMessage(), e);
 		}
 	}
 
@@ -91,9 +95,11 @@ public class MemberServiceImpl implements MemberService {
 				}
 				memberRepo.deleteById(id);
 			} else {
-				throw new RuntimeException("Member not found with id :" + id);
+				log.error("Not found error getting member by ID: {}", id);
+				throw new RuntimeException("Member not found with ID :" + id);
 			}
 		} catch (Exception e) {
+			log.error("Error getting while deleting member by ID {}", id);
 			throw new RuntimeException("Failed to delete Member: " + e.getMessage(), e);
 		}
 	}
@@ -101,9 +107,15 @@ public class MemberServiceImpl implements MemberService {
 	@Override
 	public List<Member> getMemberList() {
 		try {
-			return memberRepo.findAll();
+			var memberListRes = memberRepo.findAll();
+			if(memberListRes.isEmpty()) {
+				log.error("Not found error while getting member list");
+				throw new RuntimeException("No more member records");
+			}
+			return memberListRes;
 		} catch (Exception e) {
-			throw new RuntimeException();
+			log.error("Error while getting all the members");
+			throw new RuntimeException("Failed to get all members: " + e.getMessage(), e);
 		}
 	}
 	
