@@ -1,67 +1,46 @@
 package com.bfit.mgmt.util;
 
-import java.time.LocalDateTime;
 
 import org.springframework.http.HttpStatus;
 
+import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
+@AllArgsConstructor
+@NoArgsConstructor
 @Getter
-public class ApiResponse<T> {
-
+public class ApiResponse {
+	
+	private Integer status;
 	private String message;
-	private int statusCode;
-	private T data;
-	private LocalDateTime timestamp;
+	private Object response;
+	private Long timestamp;
+	private Boolean errorType;
 
 	// constructors
 
-	public ApiResponse(HttpStatus httpStatus, T data) {
-		this.statusCode = httpStatus.value();
-		this.data = data;
-		this.message = "";
-		this.timestamp = LocalDateTime.now();
-	}
-
-	public ApiResponse(HttpStatus httpStatus, String message) {
-		this.statusCode = httpStatus.value();
-		this.data = null;
+	public ApiResponse(HttpStatus status, String message, Object response, Boolean errorType) {
+		this.status = status.value();
 		this.message = message;
-		this.timestamp = LocalDateTime.now();
+		this.response = response;
+		this.timestamp = System.currentTimeMillis();
+		this.errorType = errorType;
 	}
-
-	// Getters and Setters
-
-//	public String getMessage() {
-//		return message;
-//	}
-//
-//	public void setMessage(String message) {
-//		this.message = message;
-//	}
-//
-//	public HttpStatus getHttpStatus() {
-//		return httpStatus;
-//	}
-//
-//	public void setHttpStatus(HttpStatus httpStatus) {
-//		this.httpStatus = httpStatus;
-//	}
-//
-//	public T getData() {
-//		return data;
-//	}
-//
-//	public void setData(T data) {
-//		this.data = data;
-//	}
-//
-//	public LocalDateTime getTimestamp() {
-//		return timestamp;
-//	}
-//
-//	public void setTimestamp(LocalDateTime timestamp) {
-//		this.timestamp = timestamp;
-//	}
+	
+	public ApiResponse(HttpStatus status, Object response, Boolean errorType) {
+		this.status = status.value();
+		this.message = "";
+		this.response = response;
+		this.timestamp = System.currentTimeMillis();
+		this.errorType = errorType;
+	}
+	
+	public ApiResponse(HttpStatus status, String message, Boolean errorType) {
+		this.status = status.value();
+		this.message = message;
+		this.timestamp = System.currentTimeMillis();
+		this.errorType = errorType;
+	}
 
 }

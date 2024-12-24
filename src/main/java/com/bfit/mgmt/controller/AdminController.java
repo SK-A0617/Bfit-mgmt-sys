@@ -5,6 +5,7 @@ import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -26,35 +27,35 @@ public class AdminController {
 
 	@Autowired
 	private AdminService adminService;
-	
+
 	@PostMapping("/saveAdmin")
-	public ApiResponse<Admin> saveAdmin(@RequestBody Admin admin){
-		var data = adminService.saveAdmin(admin);
-		return new ApiResponse<>(HttpStatus.OK, data);
+	public ResponseEntity<ApiResponse> saveAdmin(@RequestBody Admin adminRequest) {
+		var data = adminService.saveAdmin(adminRequest);
+		return new ResponseEntity<>(data, HttpStatus.OK);
 	}
-	
+
 	@GetMapping("/getAdminById")
-	public ApiResponse<Admin> getAdminById(@RequestParam UUID id){
+	public ResponseEntity<ApiResponse> getAdminById(@RequestParam UUID id) {
 		var data = adminService.getAdminById(id);
-		return new ApiResponse<>(HttpStatus.OK, data);
+		return new ResponseEntity<>(data, HttpStatus.OK);
 	}
-	
+
 	@GetMapping("/getAllAdminList")
-	public ApiResponse<List<Admin>> getAdminList(){
+	public ResponseEntity<List<Admin>> getAdminList() {
 		var data = adminService.getAdminList();
-		return new ApiResponse<>(HttpStatus.OK, data);
+		return new ResponseEntity<>(data, HttpStatus.OK);
 	}
-	
+
 	@PutMapping("/updateAdmin/{id}")
-	public ApiResponse<Admin> updateAdmin(@PathVariable UUID id,@RequestBody Admin admin){
-		var data = adminService.updateAdmin(id,admin);
-		return new ApiResponse<>(HttpStatus.OK, data);
+	public ResponseEntity<ApiResponse> updateAdmin(@PathVariable UUID id, @RequestBody Admin admin) {
+		var data = adminService.updateAdmin(id, admin);
+		return new ResponseEntity<>(data, HttpStatus.OK);
 	}
-	
+
 	@DeleteMapping("/deleteAdmin/{id}")
-	public ApiResponse<String> dltAdminById(@PathVariable UUID id){
+	public ResponseEntity<ApiResponse> dltAdminById(@PathVariable UUID id) {
 		var data = adminService.dltAdminById(id);
-		return new ApiResponse<>(HttpStatus.OK, data);
+		return new ResponseEntity<>(data, HttpStatus.OK);
 	}
-	
+
 }
