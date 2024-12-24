@@ -5,6 +5,7 @@ import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -32,39 +33,40 @@ public class MemberController {
 	private MemberService memberService;
 
 	@PostMapping("/saveMember")
-	public ApiResponse<Member> saveMember(@RequestPart("profileImg") MultipartFile profileImg,
+	public ResponseEntity<ApiResponse> saveMember(@RequestPart("profileImg") MultipartFile profileImg,
 			@RequestPart("member") String memberJson) throws JsonMappingException, JsonProcessingException {
 		ObjectMapper objectMapper = new ObjectMapper();
-		Member member = objectMapper.readValue(memberJson, Member.class);
-		var data = memberService.saveMember(profileImg, member);
-		return new ApiResponse<>(HttpStatus.OK, data);
+		var memberRequest = objectMapper.readValue(memberJson, Member.class);
+		var data = memberService.saveMember(profileImg, memberRequest);
+		return new ResponseEntity<>(data, HttpStatus.OK);
 	}
 
 	@GetMapping("/getMemberById")
-	public ApiResponse<Member> getMemberById(@RequestParam UUID id) {
+	public ResponseEntity<ApiResponse> getMemberById(@RequestParam UUID id) {
 		var data = memberService.getMemberById(id);
-		return new ApiResponse<>(HttpStatus.OK, data);
+		return new ResponseEntity<>(data, HttpStatus.OK);
 	}
 
 	@GetMapping("/getAllMemberList")
-	public ApiResponse<List<Member>> getMemberList() {
+	public ResponseEntity<List<Member>> getMemberList() {
 		var data = memberService.getMemberList();
-		return new ApiResponse<>(HttpStatus.OK, data);
+		return new ResponseEntity<>(data, HttpStatus.OK);
 	}
 
 	@PutMapping("/updateMember/{id}")
-	public ApiResponse<Member> updateMember(@PathVariable UUID id, @RequestPart("profileImg") MultipartFile profileImg,
-			@RequestPart("member") String memberJson) throws JsonMappingException, JsonProcessingException {
+	public ResponseEntity<ApiResponse> updateMember(@PathVariable UUID id,
+			@RequestPart("profileImg") MultipartFile profileImg, @RequestPart("member") String memberJson)
+			throws JsonMappingException, JsonProcessingException {
 		ObjectMapper objectMapper = new ObjectMapper();
 		Member member = objectMapper.readValue(memberJson, Member.class);
 		var data = memberService.updateMember(id, profileImg, member);
-		return new ApiResponse<>(HttpStatus.OK, data);
+		return new ResponseEntity<>(data, HttpStatus.OK);
 	}
 
 	@DeleteMapping("/deleteMemeber/{id}")
-	public ApiResponse<Void> dltMemberById(@PathVariable UUID id) {
-		memberService.dltMemberById(id);
-		return new ApiResponse<>(HttpStatus.OK, "Member deleted successfully");
+	public ResponseEntity<ApiResponse> dltMemberById(@PathVariable UUID id) {
+		var data = memberService.dltMemberById(id);
+		return new ResponseEntity<>(data, HttpStatus.OK);
 	}
 
 }

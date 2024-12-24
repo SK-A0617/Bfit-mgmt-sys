@@ -4,16 +4,17 @@ import java.util.List;
 import java.util.UUID;
 
 import com.bfit.mgmt.entity.Admin;
+import com.bfit.mgmt.util.ApiResponse;
 
 public interface AdminService {
 
-	Admin getAdminById(UUID id);
+	ApiResponse getAdminById(UUID id);
 
-	Admin saveAdmin(Admin admin);
+	ApiResponse saveAdmin(Admin adminRequest);
 	
-	Admin updateAdmin(UUID id, Admin admin);
+	ApiResponse updateAdmin(UUID id, Admin admin);
 	
-	String dltAdminById(UUID id);
+	ApiResponse dltAdminById(UUID id);
 	
 	List<Admin> getAdminList();
 	

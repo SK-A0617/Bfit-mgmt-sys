@@ -6,16 +6,17 @@ import java.util.UUID;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.bfit.mgmt.entity.Member;
+import com.bfit.mgmt.util.ApiResponse;
 
 public interface MemberService {
 
-	Member getMemberById(UUID id);
+	ApiResponse getMemberById(UUID id);
 
-	Member saveMember(MultipartFile profileImg, Member memeber);
+	ApiResponse saveMember(MultipartFile profileImg, Member memberRequest);
 
-	Member updateMember(UUID id, MultipartFile profileImg, Member memeber);
+	ApiResponse updateMember(UUID id, MultipartFile profileImg, Member memeber);
 
-	void dltMemberById(UUID id);
+	ApiResponse dltMemberById(UUID id);
 
 	List<Member> getMemberList();
 

@@ -5,14 +5,14 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-import javax.management.RuntimeErrorException;
-
+import org.apache.commons.lang3.ObjectUtils;
+import org.hibernate.procedure.ParameterMisuseException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import com.bfit.mgmt.entity.Admin;
-import com.bfit.mgmt.exceptions.DataNotFoundException;
+import com.bfit.mgmt.exceptions.ParameterMissingException;
 import com.bfit.mgmt.repo.AdminRepo;
 import com.bfit.mgmt.service.AdminService;
 import com.bfit.mgmt.util.ApiResponse;
@@ -27,32 +27,39 @@ public class AdminServiceImpl implements AdminService {
 	private AdminRepo adminRepo;
 
 	@Override
-	public Admin saveAdmin(Admin admin) {
+	public ApiResponse saveAdmin(Admin adminRequest) {
 		try {
 			var startingDate = LocalDate.now();
-			Admin adminReqBdy = new Admin(admin.getName(), admin.getEmail(), admin.getPassword(),
-					admin.getPhoneNumber(), startingDate);
-			return adminRepo.save(adminReqBdy);
+			var adminReqBdy = new Admin(adminRequest.getName(), adminRequest.getEmail(), adminRequest.getPassword(),
+					adminRequest.getPhoneNumber(), startingDate);
+			adminRepo.save(adminReqBdy);
 		} catch (Exception e) {
 			log.error("Failed error while persist admin: {}", e.getMessage(), e);
-			throw new RuntimeException("Failed to save admin: " + e.getMessage(), e);
 		}
+		return new ApiResponse(HttpStatus.OK, "Admin details saved successfully", false);
 	}
 
 	@Override
-	public Admin getAdminById(UUID id) {
+	public ApiResponse getAdminById(UUID id) {
+		Optional<Admin> response = null;
 		try {
-			var response = adminRepo.findById(id);
-			return response.get();
+			response = adminRepo.findById(id);
+			if (response.isEmpty()) {
+				log.error("Not found error getting member by ID: {}", id);
+			}
 		} catch (Exception e) {
-			log.error("Error fetching admin by ID: {}",id, e.getMessage(), e);
+			log.error("Error fetching admin by ID: {}", id, e.getMessage(), e);
 		}
-		throw new RuntimeException();
+		return new ApiResponse(HttpStatus.OK, response, false);
 	}
 
 	@Override
-	public Admin updateAdmin(UUID id, Admin updatedAdmin) {
+	public ApiResponse updateAdmin(UUID id, Admin updatedAdmin) {
+		Optional<Admin> response = null;
 		try {
+			if (ObjectUtils.isEmpty(id)) {
+				throw new ParameterMisuseException("Id is missing");
+			}
 			var adminRes = adminRepo.findById(id);
 			if (adminRes.isPresent()) {
 				var extAdminObj = adminRes.get();
@@ -60,47 +67,46 @@ public class AdminServiceImpl implements AdminService {
 				extAdminObj.setEmail(updatedAdmin.getEmail());
 				extAdminObj.setPassword(updatedAdmin.getPassword());
 				extAdminObj.setPhoneNumber(updatedAdmin.getPhoneNumber());
-				return adminRepo.save(extAdminObj);
+				adminRepo.save(extAdminObj);
+				response = adminRepo.findById(id);
 			} else {
 				log.error("Not found error getting admin by ID: {}", id);
-				throw new RuntimeException("Admin not found with ID : {}" + id);
 			}
 		} catch (Exception e) {
 			log.error("Failed to update admin by ID: " + e.getMessage(), e);
-			throw new RuntimeException("Failed to update admin: " + e.getMessage(), e);
 		}
+		return new ApiResponse(HttpStatus.OK, "Admin details updated successfully", response, false);
 	}
 
 	@Override
-	public String dltAdminById(UUID id) {
+	public ApiResponse dltAdminById(UUID id) {
 		try {
-			var adminPresentRes = adminRepo.findById(id);
-			if (adminPresentRes.isPresent()) {
-				adminRepo.deleteById(id);
-			} else {
-				log.error("Not found error getting admin by ID: {}", id);
-				throw new RuntimeException("Admin not found with ID : {}" + id);
+			if (ObjectUtils.isEmpty(id)) {
+				throw new ParameterMissingException("Id is missing");
 			}
+			var adminPresentRes = adminRepo.findById(id);
+			if (adminPresentRes.isEmpty()) {
+				log.error("Not found error getting admin by ID: {}", id);
+			}
+			adminRepo.deleteById(id);
 		} catch (Exception e) {
 			log.error("Error getting while deleting admin by ID {}", id);
-			throw new RuntimeException("Failed to delete admin: " + e.getMessage(), e);
 		}
-		return "Data Deleted Successfully";
+		return new ApiResponse(HttpStatus.OK, "Admin deleted successfully", false);
 	}
 
 	@Override
 	public List<Admin> getAdminList() {
+		List<Admin> adminListRes = null;
 		try {
-			var adminListRes = adminRepo.findAll();
+			adminListRes = adminRepo.findAll();
 			if (adminListRes.isEmpty()) {
 				log.error("Not found error while getting admin list");
-				throw new RuntimeException("No more admin records");
 			}
-			return adminListRes;
 		} catch (Exception e) {
 			log.error("Error while getting all the admin");
-			throw new RuntimeException("Failed to get all admin" + e.getMessage(), e);
 		}
+		return adminListRes;
 	}
 
 }
