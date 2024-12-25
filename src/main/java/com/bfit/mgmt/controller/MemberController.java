@@ -1,6 +1,5 @@
 package com.bfit.mgmt.controller;
 
-import java.util.List;
 import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,13 +16,15 @@ import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
-import com.bfit.mgmt.entity.Member;
+import com.bfit.mgmt.request.MemberRequest;
 import com.bfit.mgmt.service.MemberService;
 import com.bfit.mgmt.util.ApiResponse;
 import com.bfit.mgmt.util.Constants;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+
+import io.swagger.v3.oas.annotations.Operation;
 
 @RestController
 @RequestMapping(path = Constants.REQPATH)
@@ -32,12 +33,14 @@ public class MemberController {
 	@Autowired
 	private MemberService memberService;
 
-	@PostMapping("/saveMember")
-	public ResponseEntity<ApiResponse> saveMember(@RequestPart("profileImg") MultipartFile profileImg,
+	@PostMapping("/createMember")
+	@Operation
+	public ResponseEntity<ApiResponse> createMember(
+			@RequestPart(name = "profileImg", required = false)MultipartFile profileImg,
 			@RequestPart("member") String memberJson) throws JsonMappingException, JsonProcessingException {
 		ObjectMapper objectMapper = new ObjectMapper();
-		var memberRequest = objectMapper.readValue(memberJson, Member.class);
-		var data = memberService.saveMember(profileImg, memberRequest);
+		var memberRequest = objectMapper.readValue(memberJson, MemberRequest.class);
+		var data = memberService.createMember(profileImg, memberRequest);
 		return new ResponseEntity<>(data, HttpStatus.OK);
 	}
 
@@ -48,7 +51,7 @@ public class MemberController {
 	}
 
 	@GetMapping("/getAllMemberList")
-	public ResponseEntity<List<Member>> getMemberList() {
+	public ResponseEntity<ApiResponse> getMemberList() {
 		var data = memberService.getMemberList();
 		return new ResponseEntity<>(data, HttpStatus.OK);
 	}
@@ -58,8 +61,8 @@ public class MemberController {
 			@RequestPart("profileImg") MultipartFile profileImg, @RequestPart("member") String memberJson)
 			throws JsonMappingException, JsonProcessingException {
 		ObjectMapper objectMapper = new ObjectMapper();
-		Member member = objectMapper.readValue(memberJson, Member.class);
-		var data = memberService.updateMember(id, profileImg, member);
+		var memberRequest = objectMapper.readValue(memberJson, MemberRequest.class);
+		var data = memberService.updateMember(id, profileImg, memberRequest);
 		return new ResponseEntity<>(data, HttpStatus.OK);
 	}
 
