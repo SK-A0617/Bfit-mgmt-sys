@@ -33,21 +33,19 @@ public class S3ServiceConfig {
 	private String s3BaseUrl;
 
 	public String uploadFile(MultipartFile multipartFile) {
+		UUID id = UUID.randomUUID();
+		String fileName = id + "_" + multipartFile.getOriginalFilename();
 		try {
 			File file = convertMultipartFileToFile(multipartFile);
-			UUID id = UUID.randomUUID();
-			String fileName = id + "_" + multipartFile.getOriginalFilename();
 			s3Client.putObject(new PutObjectRequest(bucketName, fileName, file));
 			file.delete();
 			log.info(fileName + "File Uploaded Successfully");
-			return s3BaseUrl + "/" + fileName;
 		} catch (AmazonS3Exception amazonS3Exception) {
 			log.error("Access Denied", amazonS3Exception);
-			throw new RuntimeException("Access Denied", amazonS3Exception);
 		} catch (Exception e) {
 			log.error("File upload failed", e);
-			throw new RuntimeException("File upload failed", e);
 		}
+		return s3BaseUrl + "/" + fileName;
 
 	}
 
@@ -57,7 +55,6 @@ public class S3ServiceConfig {
 			fileOutputStream.write(file.getBytes());
 		} catch (IOException e) {
 			log.error("Error Converting MultipartFile to File", e);
-			throw new RuntimeException("Error Converting MultipartFile to File", e);
 		}
 		return convertedFile;
 	}
@@ -68,11 +65,10 @@ public class S3ServiceConfig {
 			return IOUtils.toByteArray(inputStream);
 		} catch (AmazonS3Exception e) {
 			log.error("Amazon S3 error while fetching file '{}': {}", fileName, e.getMessage(), e);
-			throw new RuntimeException("Error fetching file from S3: " + e.getErrorMessage(), e);
 		} catch (IOException e) {
 			log.error("IO error while reading file from S3: {}", fileName, e);
-			throw new RuntimeException("IO error fetching file from S3", e);
 		}
+		return null;
 	}
 
 	public void deleteFile(String fileUrl) {

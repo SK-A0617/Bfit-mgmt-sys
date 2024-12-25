@@ -1,21 +1,20 @@
 package com.bfit.mgmt.service;
 
-import java.util.List;
 import java.util.UUID;
 
-import com.bfit.mgmt.entity.Admin;
+import com.bfit.mgmt.request.AdminRequest;
 import com.bfit.mgmt.util.ApiResponse;
 
 public interface AdminService {
 
 	ApiResponse getAdminById(UUID id);
 
-	ApiResponse saveAdmin(Admin adminRequest);
+	ApiResponse createAdmin(AdminRequest adminRequest);
 	
-	ApiResponse updateAdmin(UUID id, Admin admin);
+	ApiResponse updateAdmin(UUID id, AdminRequest adminRequest);
 	
 	ApiResponse dltAdminById(UUID id);
 	
-	List<Admin> getAdminList();
+	ApiResponse getAdminList();
 	
 }

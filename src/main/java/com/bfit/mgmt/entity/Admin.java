@@ -54,13 +54,13 @@ public class Admin {
 	@Column(name = "updated_at")
 	private Timestamp updatedAt;
 
-	public Admin(String name, String email, String password, String phoneNumber, LocalDate startingDate) {
+	public Admin(String name, String email, String password, String phoneNumber, String role, LocalDate startingDate) {
 		super();
 		this.name = name;
 		this.email = email;
 		this.password = password;
 		this.phoneNumber = phoneNumber;
-		// this.role = role;
+		this.role = role;
 		this.startingDate = startingDate;
 	}
 

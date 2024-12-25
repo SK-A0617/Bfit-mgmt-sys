@@ -1,6 +1,5 @@
 package com.bfit.mgmt.controller;
 
-import java.util.List;
 import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,11 +15,11 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.bfit.mgmt.entity.Admin;
+import com.bfit.mgmt.request.AdminRequest;
 import com.bfit.mgmt.service.AdminService;
 import com.bfit.mgmt.util.ApiResponse;
 import com.bfit.mgmt.util.Constants;
-
+	
 @RestController
 @RequestMapping(path = Constants.REQPATH)
 public class AdminController {
@@ -28,9 +27,9 @@ public class AdminController {
 	@Autowired
 	private AdminService adminService;
 
-	@PostMapping("/saveAdmin")
-	public ResponseEntity<ApiResponse> saveAdmin(@RequestBody Admin adminRequest) {
-		var data = adminService.saveAdmin(adminRequest);
+	@PostMapping("/createAdmin")
+	public ResponseEntity<ApiResponse> createAdmin(@RequestBody AdminRequest adminRequest) {
+		var data = adminService.createAdmin(adminRequest);
 		return new ResponseEntity<>(data, HttpStatus.OK);
 	}
 
@@ -41,14 +40,14 @@ public class AdminController {
 	}
 
 	@GetMapping("/getAllAdminList")
-	public ResponseEntity<List<Admin>> getAdminList() {
+	public ResponseEntity<ApiResponse> getAdminList() {
 		var data = adminService.getAdminList();
 		return new ResponseEntity<>(data, HttpStatus.OK);
 	}
 
 	@PutMapping("/updateAdmin/{id}")
-	public ResponseEntity<ApiResponse> updateAdmin(@PathVariable UUID id, @RequestBody Admin admin) {
-		var data = adminService.updateAdmin(id, admin);
+	public ResponseEntity<ApiResponse> updateAdmin(@PathVariable UUID id, @RequestBody AdminRequest adminRequest) {
+		var data = adminService.updateAdmin(id, adminRequest);
 		return new ResponseEntity<>(data, HttpStatus.OK);
 	}
 
