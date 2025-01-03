@@ -42,7 +42,6 @@ public class MemberServiceImpl implements MemberService {
 				throw new ParameterMissingException("All input parameters are required");
 			}
 			if (ObjectUtils.isNotEmpty(profileImg)) {
-				System.out.println("INside the profile is present condition");
 				profileUrl = s3ServiceConfig.uploadFile(profileImg);
 			}
 			var status = true;
