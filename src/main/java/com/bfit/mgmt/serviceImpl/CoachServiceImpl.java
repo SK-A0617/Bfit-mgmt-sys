@@ -3,6 +3,7 @@ package com.bfit.mgmt.serviceImpl;
 import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -14,7 +15,6 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.bfit.mgmt.config.S3ServiceConfig;
 import com.bfit.mgmt.entity.Coach;
-import com.bfit.mgmt.exceptions.DataNotFoundException;
 import com.bfit.mgmt.exceptions.ParameterMissingException;
 import com.bfit.mgmt.repo.CoachRepo;
 import com.bfit.mgmt.request.CoachRequest;
@@ -41,7 +41,7 @@ public class CoachServiceImpl implements CoachService {
 					|| ObjectUtils.isEmpty(coachRequest.getPhoneNumber())) {
 				throw new ParameterMissingException("All input parameters are required");
 			}
-			if (ObjectUtils.isNotEmpty(profileImg)) {
+			if (!Objects.isNull(profileImg)) {
 				profileUrl = s3ServiceConfig.uploadFile(profileImg);
 			}
 			var status = true;
@@ -54,7 +54,7 @@ public class CoachServiceImpl implements CoachService {
 		} catch (Exception e) {
 			log.error("Failed error while persist coach: {}", e.getMessage(), e);
 		}
-		return new ApiResponse(HttpStatus.OK, "Error while saving data", true);
+		return new ApiResponse(HttpStatus.BAD_REQUEST, "Error while saving data", true);
 	}
 
 	@Override
@@ -62,13 +62,14 @@ public class CoachServiceImpl implements CoachService {
 		Optional<Coach> response = null;
 		try {
 			response = coachRepo.findById(id);
-			if (response.isEmpty()) {
-				log.error("Not found error getting coach by ID: {}", id);
+			if (!ObjectUtils.isEmpty(response)) {
+				return new ApiResponse(HttpStatus.OK, response, false);
 			}
+			log.error("Not found error getting member by ID: {}", id);
 		} catch (Exception e) {
 			log.error("Error fetching coach by ID: {}", e.getMessage(), e);
 		}
-		return new ApiResponse(HttpStatus.OK, response, false);
+		return new ApiResponse(HttpStatus.BAD_REQUEST, response, false);
 	}
 
 	@Override
@@ -78,42 +79,45 @@ public class CoachServiceImpl implements CoachService {
 			if (ObjectUtils.isEmpty(id)) {
 				throw new ParameterMissingException("Id is missing");
 			}
-			if (ObjectUtils.isEmpty(updatedCoach)) {
-				throw new DataNotFoundException("Request should not be empty");
-			}
+
+			var name = updatedCoach.getCoachName();
+			var email = updatedCoach.getEmail();
+			var phNumber = updatedCoach.getPhoneNumber();
+			var status = updatedCoach.getStatus();
+
 			var existingCoach = coachRepo.findById(id);
 			if (existingCoach.isPresent()) {
 				var extCoachObj = existingCoach.get();
-				// if (profileImg != null && !profileImg.isEmpty()) {
-				if (ObjectUtils.isNotEmpty(profileImg)) {
+				if (profileImg != null && !profileImg.isEmpty()) {
 					if (extCoachObj.getProfileUrl() != null) {
 						s3ServiceConfig.deleteFile(extCoachObj.getProfileUrl());
 					}
 					String newProfileUrl = s3ServiceConfig.uploadFile(profileImg);
 					extCoachObj.setProfileUrl(newProfileUrl);
 				}
-				if (ObjectUtils.isNotEmpty(updatedCoach.getCoachName())) {
+				if (ObjectUtils.isNotEmpty(name)) {
 					extCoachObj.setCoachName(updatedCoach.getCoachName());
 				}
-				if (ObjectUtils.isNotEmpty(updatedCoach.getEmail())) {
+				if (ObjectUtils.isNotEmpty(email)) {
 					extCoachObj.setEmail(updatedCoach.getEmail());
 				}
-				if (ObjectUtils.isNotEmpty(updatedCoach.getPhoneNumber())) {
+				if (ObjectUtils.isNotEmpty(phNumber)) {
 					extCoachObj.setPhoneNumber(updatedCoach.getPhoneNumber());
 				}
-				if (ObjectUtils.isNotEmpty(updatedCoach.getStatus())) {
+				if (ObjectUtils.isNotEmpty(status)) {
 					extCoachObj.setStatus(updatedCoach.getStatus());
 				}
 				extCoachObj.setUpdatedAt(new Timestamp(System.currentTimeMillis()));
 				coachRepo.save(extCoachObj);
 				response = coachRepo.findById(id);
+				return new ApiResponse(HttpStatus.OK, "Coach details updated successfully", response, false);
 			} else {
 				log.error("Not found error getting coach by ID: {}", id);
 			}
 		} catch (Exception e) {
 			log.error("Failed to update coach by ID:{} ", e.getMessage(), e);
 		}
-		return new ApiResponse(HttpStatus.OK, "Coach details updated successfully", response, false);
+		return new ApiResponse(HttpStatus.BAD_REQUEST, "Error while updating data", true);
 	}
 
 	@Override
@@ -123,18 +127,18 @@ public class CoachServiceImpl implements CoachService {
 				throw new ParameterMissingException("Id is missing");
 			}
 			var coachPresentRes = coachRepo.findById(id);
-			if (coachPresentRes.isPresent()) {
+			if (!ObjectUtils.isEmpty(coachPresentRes)) {
 				if (coachPresentRes.get().getProfileUrl() != null) {
 					s3ServiceConfig.deleteFile(coachPresentRes.get().getProfileUrl());
 				}
 				coachRepo.deleteById(id);
+				return new ApiResponse(HttpStatus.OK, "Coach deleted successfully", false);
 			}
 			log.error("Not found error getting coach by ID: {}", id);
-			return new ApiResponse(HttpStatus.NOT_FOUND, "Data Not Found", true);
 		} catch (Exception e) {
 			log.error("Error getting while deleting coach by ID {}", id);
 		}
-		return new ApiResponse(HttpStatus.OK, "Coach deleted successfully", false);
+		return new ApiResponse(HttpStatus.BAD_REQUEST, "Error while deleting data", true);
 	}
 
 	@Override
@@ -142,13 +146,11 @@ public class CoachServiceImpl implements CoachService {
 		List<Coach> coachListRes = null;
 		try {
 			coachListRes = coachRepo.findAll();
-			if (ObjectUtils.isEmpty(coachListRes)) {
-				log.error("Not found error while getting coach list");
-			}
+			return new ApiResponse(HttpStatus.OK, coachListRes, false);
 		} catch (Exception e) {
 			log.error("Error while getting all the coach");
 		}
-		return new ApiResponse(HttpStatus.OK, coachListRes, false);
+		return new ApiResponse(HttpStatus.BAD_REQUEST, "Error while getting list of data", false);
 	}
 
 }

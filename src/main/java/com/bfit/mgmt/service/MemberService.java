@@ -4,7 +4,6 @@ import java.util.UUID;
 
 import org.springframework.web.multipart.MultipartFile;
 
-import com.bfit.mgmt.entity.Member;
 import com.bfit.mgmt.request.MemberRequest;
 import com.bfit.mgmt.util.ApiResponse;
 

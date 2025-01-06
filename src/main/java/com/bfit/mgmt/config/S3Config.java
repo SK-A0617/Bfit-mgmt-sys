@@ -28,7 +28,7 @@ public class S3Config {
 
 	@PostConstruct
 	public void checkProperties() {
-		log.info("bucket connected with region :"+ region);
+		log.info("bucket connected with region :{}", region);
 	}
 
 	@Bean

@@ -39,7 +39,7 @@ public class S3ServiceConfig {
 			File file = convertMultipartFileToFile(multipartFile);
 			s3Client.putObject(new PutObjectRequest(bucketName, fileName, file));
 			file.delete();
-			log.info(fileName + "File Uploaded Successfully");
+            log.info("{} File Uploaded Successfully", fileName);
 		} catch (AmazonS3Exception amazonS3Exception) {
 			log.error("Access Denied", amazonS3Exception);
 		} catch (Exception e) {

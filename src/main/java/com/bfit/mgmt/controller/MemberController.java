@@ -21,7 +21,6 @@ import com.bfit.mgmt.service.MemberService;
 import com.bfit.mgmt.util.ApiResponse;
 import com.bfit.mgmt.util.Constants;
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -37,7 +36,7 @@ public class MemberController {
 	@Operation
 	public ResponseEntity<ApiResponse> createMember(
 			@RequestPart(name = "profileImg", required = false)MultipartFile profileImg,
-			@RequestPart("member") String memberJson) throws JsonMappingException, JsonProcessingException {
+			@RequestPart("member") String memberJson) throws JsonProcessingException {
 		ObjectMapper objectMapper = new ObjectMapper();
 		var memberRequest = objectMapper.readValue(memberJson, MemberRequest.class);
 		var data = memberService.createMember(profileImg, memberRequest);
@@ -59,7 +58,7 @@ public class MemberController {
 	@PutMapping("/updateMember/{id}")
 	public ResponseEntity<ApiResponse> updateMember(@PathVariable UUID id,
 			@RequestPart("profileImg") MultipartFile profileImg, @RequestPart("member") String memberJson)
-			throws JsonMappingException, JsonProcessingException {
+			throws JsonProcessingException {
 		ObjectMapper objectMapper = new ObjectMapper();
 		var memberRequest = objectMapper.readValue(memberJson, MemberRequest.class);
 		var data = memberService.updateMember(id, profileImg, memberRequest);
