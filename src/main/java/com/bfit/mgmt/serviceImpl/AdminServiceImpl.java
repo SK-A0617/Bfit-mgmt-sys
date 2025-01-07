@@ -12,7 +12,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import com.bfit.mgmt.entity.Admin;
-import com.bfit.mgmt.exceptions.DataNotFoundException;
 import com.bfit.mgmt.exceptions.ParameterMissingException;
 import com.bfit.mgmt.repo.AdminRepo;
 import com.bfit.mgmt.request.AdminRequest;
@@ -44,7 +43,7 @@ public class AdminServiceImpl implements AdminService {
 		} catch (Exception e) {
 			log.error("Failed error while persist admin: {}", e.getMessage(), e);
 		}
-		return new ApiResponse(HttpStatus.OK, "Error while saving data", true);
+		return new ApiResponse(HttpStatus.BAD_REQUEST, "Error while saving data", true);
 	}
 
 	@Override
@@ -52,13 +51,15 @@ public class AdminServiceImpl implements AdminService {
 		Optional<Admin> response = null;
 		try {
 			response = adminRepo.findById(id);
-			if (response.isEmpty()) {
+			if (!ObjectUtils.isEmpty(response)) {
 				log.error("Not found error getting member by ID: {}", id);
+				return new ApiResponse(HttpStatus.OK, response, false);
 			}
+		log.error("Not found error getting member by ID: {}", id);
 		} catch (Exception e) {
 			log.error("Error fetching admin by ID: {}", id, e.getMessage(), e);
 		}
-		return new ApiResponse(HttpStatus.OK, response, false);
+		return new ApiResponse(HttpStatus.BAD_REQUEST, "Error while getting data", true);
 	}
 
 	@Override
@@ -68,34 +69,39 @@ public class AdminServiceImpl implements AdminService {
 			if (ObjectUtils.isEmpty(id)) {
 				throw new ParameterMissingException("Id is missing");
 			}
-			if(ObjectUtils.isEmpty(updatedAdmin)) {
-				throw new DataNotFoundException("Request should not be empty");
-			}
 			var existingAdmin = adminRepo.findById(id);
 			if (existingAdmin.isPresent()) {
 				var extAdminObj = existingAdmin.get();
-				if (ObjectUtils.isNotEmpty(updatedAdmin.getName())) {
+
+				var name = updatedAdmin.getName();
+				var email = updatedAdmin.getEmail();
+				var password = updatedAdmin.getPassword();
+				var phNumber = updatedAdmin.getPhoneNumber();
+
+				if (ObjectUtils.isNotEmpty(name)) {
 					extAdminObj.setName(updatedAdmin.getName());
 				}
-				if (ObjectUtils.isNotEmpty(updatedAdmin.getEmail())) {
+				if (ObjectUtils.isNotEmpty(email)) {
 					extAdminObj.setEmail(updatedAdmin.getEmail());
 				}
-				if (ObjectUtils.isNotEmpty(updatedAdmin.getPassword())) {
+				if (ObjectUtils.isNotEmpty(password)) {
 					extAdminObj.setPassword(updatedAdmin.getPassword());
 				}
-				if (ObjectUtils.isNotEmpty(updatedAdmin.getPhoneNumber())) {
+				if (ObjectUtils.isNotEmpty(phNumber)) {
 					extAdminObj.setPhoneNumber(updatedAdmin.getPhoneNumber());
 				}
+				extAdminObj.setRole(updatedAdmin.getRole());
 				extAdminObj.setUpdatedAt(new Timestamp(System.currentTimeMillis()));
 				adminRepo.save(extAdminObj);
 				response = adminRepo.findById(id);
+				return new ApiResponse(HttpStatus.OK, "Admin details updated successfully", response, false);
 			} else {
 				log.error("Not found error getting admin by ID: {}", id);
 			}
 		} catch (Exception e) {
 			log.error("Failed to update admin by ID: " + e.getMessage(), e);
 		}
-		return new ApiResponse(HttpStatus.OK, "Admin details updated successfully", response, false);
+		return new ApiResponse(HttpStatus.BAD_REQUEST, "Error while updating data", true);
 	}
 
 	@Override
@@ -105,15 +111,15 @@ public class AdminServiceImpl implements AdminService {
 				throw new ParameterMissingException("Id is missing");
 			}
 			var adminPresentRes = adminRepo.findById(id);
-			if (ObjectUtils.isEmpty(adminPresentRes)) {
-				log.error("Not found error getting admin by ID: {}", id);
-				return new ApiResponse(HttpStatus.NOT_FOUND, "Data Not Found", true);
+			if (!ObjectUtils.isEmpty(adminPresentRes)) {
+				adminRepo.deleteById(id);
+				return new ApiResponse(HttpStatus.OK, "Admin deleted successfully", false);
 			}
-			adminRepo.deleteById(id);
+			log.error("Not found error getting admin by ID: {}", id);
 		} catch (Exception e) {
 			log.error("Error getting while deleting admin by ID {}", id);
 		}
-		return new ApiResponse(HttpStatus.OK, "Admin deleted successfully", false);
+		return new ApiResponse(HttpStatus.BAD_REQUEST, "Error while deleting data", true);
 	}
 
 	@Override
@@ -121,13 +127,11 @@ public class AdminServiceImpl implements AdminService {
 		List<Admin> adminListRes = null;
 		try {
 			adminListRes = adminRepo.findAll();
-			if (ObjectUtils.isEmpty(adminListRes)) {
-				log.error("Not found error while getting admin list");
-			}
+			return new ApiResponse(HttpStatus.OK, adminListRes, false);
 		} catch (Exception e) {
 			log.error("Error while getting all the admin");
 		}
-		return new ApiResponse(HttpStatus.OK, adminListRes, false);
+		return new ApiResponse(HttpStatus.BAD_REQUEST, "Error while getting list of data", true);
 	}
 
 }

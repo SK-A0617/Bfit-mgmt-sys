@@ -37,7 +37,7 @@ public class CoachController {
 	@Operation
 	public ResponseEntity<ApiResponse> createCoach(
 			@RequestPart(name = "profileImg", required = false) MultipartFile profileImg,
-			@RequestPart("coach") String coachJson) throws JsonMappingException, JsonProcessingException {
+			@RequestPart("coach") String coachJson) throws JsonProcessingException {
 		ObjectMapper objectMapper = new ObjectMapper();
 		var coachRequest = objectMapper.readValue(coachJson, CoachRequest.class);
 		var data = coachService.createCoach(profileImg, coachRequest);
@@ -59,7 +59,7 @@ public class CoachController {
 	@PutMapping("/updateCoach/{id}")
 	public ResponseEntity<ApiResponse> updateCoach(@PathVariable UUID id,
 			@RequestPart("profileImg") MultipartFile profileImg, @RequestPart("coach") String coachJson)
-			throws JsonMappingException, JsonProcessingException {
+			throws JsonProcessingException {
 		ObjectMapper objectMapper = new ObjectMapper();
 		var coachRequest = objectMapper.readValue(coachJson, CoachRequest.class);
 		var data = coachService.updateCoach(id, profileImg, coachRequest);

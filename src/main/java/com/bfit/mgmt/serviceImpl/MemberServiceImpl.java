@@ -3,6 +3,7 @@ package com.bfit.mgmt.serviceImpl;
 import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -14,7 +15,6 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.bfit.mgmt.config.S3ServiceConfig;
 import com.bfit.mgmt.entity.Member;
-import com.bfit.mgmt.exceptions.DataNotFoundException;
 import com.bfit.mgmt.exceptions.ParameterMissingException;
 import com.bfit.mgmt.repo.MemberRepo;
 import com.bfit.mgmt.request.MemberRequest;
@@ -41,7 +41,7 @@ public class MemberServiceImpl implements MemberService {
 					|| ObjectUtils.isEmpty(memberRequest.getPhoneNumber())) {
 				throw new ParameterMissingException("All input parameters are required");
 			}
-			if (ObjectUtils.isNotEmpty(profileImg)) {
+			if (!Objects.isNull(profileImg)) {
 				profileUrl = s3ServiceConfig.uploadFile(profileImg);
 			}
 			var status = true;
@@ -54,7 +54,7 @@ public class MemberServiceImpl implements MemberService {
 		} catch (Exception e) {
 			log.error("Failed error while persist member: {}", e.getMessage(), e);
 		}
-		return new ApiResponse(HttpStatus.OK, "Error while saving data", true);
+		return new ApiResponse(HttpStatus.BAD_REQUEST, "Error while saving data", true);
 	}
 
 	@Override
@@ -62,58 +62,62 @@ public class MemberServiceImpl implements MemberService {
 		Optional<Member> response = null;
 		try {
 			response = memberRepo.findById(id);
-			if (response.isEmpty()) {
-				log.error("Not found error getting member by ID: {}", id);
+			if (!ObjectUtils.isEmpty(response)) {
+				return new ApiResponse(HttpStatus.OK, response, false);
 			}
+			log.error("Not found error getting member by ID: {}", id);
 		} catch (Exception e) {
 			log.error("Error fetching member by ID: {}", e.getMessage(), e);
 		}
-		return new ApiResponse(HttpStatus.OK, response, false);
+		return new ApiResponse(HttpStatus.BAD_REQUEST, "Error while getting data", true);
 	}
 
 	@Override
-	public ApiResponse updateMember(UUID id, MultipartFile profileImg, MemberRequest updatedMemeber) {
+	public ApiResponse updateMember(UUID id, MultipartFile profileImg, MemberRequest updatedMember) {
 		Optional<Member> response = null;
 		try {
 			if (ObjectUtils.isEmpty(id)) {
 				throw new ParameterMissingException("Id is missing");
 			}
-			if (ObjectUtils.isEmpty(updatedMemeber)) {
-				throw new DataNotFoundException("Request should not be empty");
-			}
 			var existingMember = memberRepo.findById(id);
 			if (existingMember.isPresent()) {
+
+				var name = updatedMember.getMemberName();
+				var email = updatedMember.getEmail();
+				var phNumber = updatedMember.getPhoneNumber();
+				var status = updatedMember.getStatus();
+
 				var extMemberObj = existingMember.get();
-				// if (profileImg != null && !profileImg.isEmpty()) {
-				if (ObjectUtils.isNotEmpty(profileImg)) {
+				if (profileImg != null && !profileImg.isEmpty()) {
 					if (extMemberObj.getProfileUrl() != null) {
 						s3ServiceConfig.deleteFile(extMemberObj.getProfileUrl());
 					}
 					String newProfileUrl = s3ServiceConfig.uploadFile(profileImg);
 					extMemberObj.setProfileUrl(newProfileUrl);
 				}
-				if (ObjectUtils.isNotEmpty(updatedMemeber.getMemberName())) {
-					extMemberObj.setMemberName(updatedMemeber.getMemberName());
+				if (ObjectUtils.isNotEmpty(name)) {
+					extMemberObj.setMemberName(updatedMember.getMemberName());
 				}
-				if (ObjectUtils.isNotEmpty(updatedMemeber.getEmail())) {
-					extMemberObj.setEmail(updatedMemeber.getEmail());
+				if (ObjectUtils.isNotEmpty(email)) {
+					extMemberObj.setEmail(updatedMember.getEmail());
 				}
-				if (ObjectUtils.isNotEmpty(updatedMemeber.getPhoneNumber())) {
-					extMemberObj.setPhoneNumber(updatedMemeber.getPhoneNumber());
+				if (ObjectUtils.isNotEmpty(phNumber)) {
+					extMemberObj.setPhoneNumber(updatedMember.getPhoneNumber());
 				}
-				if (ObjectUtils.isNotEmpty(updatedMemeber.getStatus())) {
-					extMemberObj.setStatus(updatedMemeber.getStatus());
+				if (ObjectUtils.isNotEmpty(status)) {
+					extMemberObj.setStatus(updatedMember.getStatus());
 				}
 				extMemberObj.setUpdatedAt(new Timestamp(System.currentTimeMillis()));
 				memberRepo.save(extMemberObj);
 				response = memberRepo.findById(id);
+				return new ApiResponse(HttpStatus.OK, "Member details updated successfully", response, false);
 			} else {
 				log.error("Not found error getting member by ID: {}", id);
 			}
 		} catch (Exception e) {
 			log.error("Failed to update member by ID:{} ", e.getMessage(), e);
 		}
-		return new ApiResponse(HttpStatus.OK, "Member details updated successfully", response, false);
+		return new ApiResponse(HttpStatus.BAD_REQUEST, "Error while updating data", true);
 	}
 
 	@Override
@@ -123,18 +127,18 @@ public class MemberServiceImpl implements MemberService {
 				throw new ParameterMissingException("Id is missing");
 			}
 			var memberPresentRes = memberRepo.findById(id);
-			if (memberPresentRes.isPresent()) {
+			if (!ObjectUtils.isEmpty(memberPresentRes)) {
 				if (memberPresentRes.get().getProfileUrl() != null) {
 					s3ServiceConfig.deleteFile(memberPresentRes.get().getProfileUrl());
 				}
 				memberRepo.deleteById(id);
+				return new ApiResponse(HttpStatus.OK, "Member deleted successfully", false);
 			}
 			log.error("Not found error getting member by ID: {}", id);
-			return new ApiResponse(HttpStatus.NOT_FOUND, "Data Not Found", true);
 		} catch (Exception e) {
 			log.error("Error getting while deleting member by ID {}", id);
 		}
-		return new ApiResponse(HttpStatus.OK, "Member deleted successfully", false);
+		return new ApiResponse(HttpStatus.BAD_REQUEST, "Error while deleting data", true);
 	}
 
 	@Override
@@ -142,13 +146,11 @@ public class MemberServiceImpl implements MemberService {
 		List<Member> memberListRes = null;
 		try {
 			memberListRes = memberRepo.findAll();
-			if (ObjectUtils.isEmpty(memberListRes)) {
-				log.error("Not found error while getting member list");
-			}
+			return new ApiResponse(HttpStatus.OK, memberListRes, false);
 		} catch (Exception e) {
 			log.error("Error while getting all the members");
 		}
-		return new ApiResponse(HttpStatus.OK, memberListRes, false);
+		return new ApiResponse(HttpStatus.BAD_REQUEST, "Error while getting list of data", true);
 	}
 
 }
