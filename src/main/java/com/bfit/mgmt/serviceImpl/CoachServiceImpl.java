@@ -41,13 +41,14 @@ public class CoachServiceImpl implements CoachService {
 					|| ObjectUtils.isEmpty(coachRequest.getPhoneNumber())) {
 				throw new ParameterMissingException("All input parameters are required");
 			}
+			UUID id = UUID.randomUUID();
 			if (!Objects.isNull(profileImg)) {
-				profileUrl = s3ServiceConfig.uploadFile(profileImg);
+				profileUrl = s3ServiceConfig.uploadFile(profileImg, id);
 			}
 			var status = true;
 			var joiningDate = LocalDate.now();
 			var createdAt = new Timestamp(System.currentTimeMillis());
-			var coachReqBdy = new Coach(profileUrl, coachRequest.getCoachName(), coachRequest.getEmail(),
+			var coachReqBdy = new Coach(id, profileUrl, coachRequest.getCoachName(), coachRequest.getEmail(),
 					coachRequest.getPhoneNumber(), status, joiningDate, createdAt, createdAt);
 			coachRepo.save(coachReqBdy);
 			return new ApiResponse(HttpStatus.OK, "Coach details saved successfully", false);
@@ -92,7 +93,7 @@ public class CoachServiceImpl implements CoachService {
 					if (extCoachObj.getProfileUrl() != null) {
 						s3ServiceConfig.deleteFile(extCoachObj.getProfileUrl());
 					}
-					String newProfileUrl = s3ServiceConfig.uploadFile(profileImg);
+					String newProfileUrl = s3ServiceConfig.uploadFile(profileImg, id);
 					extCoachObj.setProfileUrl(newProfileUrl);
 				}
 				if (ObjectUtils.isNotEmpty(name)) {

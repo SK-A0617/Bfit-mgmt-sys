@@ -13,9 +13,6 @@ import org.springframework.web.multipart.MultipartFile;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.AmazonS3Exception;
 import com.amazonaws.services.s3.model.PutObjectRequest;
-import com.amazonaws.services.s3.model.S3Object;
-import com.amazonaws.services.s3.model.S3ObjectInputStream;
-import com.amazonaws.util.IOUtils;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -32,8 +29,7 @@ public class S3ServiceConfig {
 	@Value("${aws.s3.base-url}")
 	private String s3BaseUrl;
 
-	public String uploadFile(MultipartFile multipartFile) {
-		UUID id = UUID.randomUUID();
+	public String uploadFile(MultipartFile multipartFile, UUID id) {
 		String fileName = id + "_" + multipartFile.getOriginalFilename();
 		try {
 			File file = convertMultipartFileToFile(multipartFile);
@@ -59,17 +55,17 @@ public class S3ServiceConfig {
 		return convertedFile;
 	}
 
-	public byte[] getFile(String fileName) {
-		try (S3Object s3Object = s3Client.getObject(bucketName, fileName);
-				S3ObjectInputStream inputStream = s3Object.getObjectContent()) {
-			return IOUtils.toByteArray(inputStream);
-		} catch (AmazonS3Exception e) {
-			log.error("Amazon S3 error while fetching file '{}': {}", fileName, e.getMessage(), e);
-		} catch (IOException e) {
-			log.error("IO error while reading file from S3: {}", fileName, e);
-		}
-		return null;
-	}
+//	public byte[] getFile(String fileName) {
+//		try (S3Object s3Object = s3Client.getObject(bucketName, fileName);
+//				S3ObjectInputStream inputStream = s3Object.getObjectContent()) {
+//			return IOUtils.toByteArray(inputStream);
+//		} catch (AmazonS3Exception e) {
+//			log.error("Amazon S3 error while fetching file '{}': {}", fileName, e.getMessage(), e);
+//		} catch (IOException e) {
+//			log.error("IO error while reading file from S3: {}", fileName, e);
+//		}
+//		return null;
+//	}
 
 	public void deleteFile(String fileUrl) {
 		try {

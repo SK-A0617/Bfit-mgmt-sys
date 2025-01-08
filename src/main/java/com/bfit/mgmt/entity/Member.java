@@ -10,8 +10,6 @@ import org.springframework.web.multipart.MultipartFile;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import jakarta.persistence.Transient;
@@ -26,7 +24,6 @@ import lombok.NoArgsConstructor;
 public class Member {
 
 	@Id
-	@GeneratedValue(strategy = GenerationType.AUTO)
 	@Column(name = "id", updatable = false, nullable = false)
 	private UUID id;
 
@@ -60,9 +57,10 @@ public class Member {
 	@Column(name = "updated_at", nullable = false)
 	private Timestamp updatedAt;
 
-	public Member(String profileUrl, String memberName, @Email String email,
+	public Member(UUID id, String profileUrl, String memberName, @Email String email,
 			String phoneNumber, Boolean status, LocalDate joiningDate, Timestamp createdAt, Timestamp updatedAt) {
 		super();
+		this.id = id;
 		this.profileUrl = profileUrl;
 		this.memberName = memberName;
 		this.email = email;
@@ -72,7 +70,5 @@ public class Member {
 		this.createdAt = createdAt;
 		this.updatedAt = updatedAt;
 	}
-	
-	
 	
 }

@@ -21,7 +21,6 @@ import com.bfit.mgmt.service.CoachService;
 import com.bfit.mgmt.util.ApiResponse;
 import com.bfit.mgmt.util.Constants;
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import io.swagger.v3.oas.annotations.Operation;
