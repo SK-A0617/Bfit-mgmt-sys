@@ -41,13 +41,14 @@ public class MemberServiceImpl implements MemberService {
 					|| ObjectUtils.isEmpty(memberRequest.getPhoneNumber())) {
 				throw new ParameterMissingException("All input parameters are required");
 			}
+			UUID id = UUID.randomUUID();
 			if (!Objects.isNull(profileImg)) {
-				profileUrl = s3ServiceConfig.uploadFile(profileImg);
+				profileUrl = s3ServiceConfig.uploadFile(profileImg, id);
 			}
 			var status = true;
 			var joiningDate = LocalDate.now();
 			var createdAt = new Timestamp(System.currentTimeMillis());
-			var memberReqBdy = new Member(profileUrl, memberRequest.getMemberName(), memberRequest.getEmail(),
+			var memberReqBdy = new Member(id, profileUrl, memberRequest.getMemberName(), memberRequest.getEmail(),
 					memberRequest.getPhoneNumber(), status, joiningDate, createdAt, createdAt);
 			memberRepo.save(memberReqBdy);
 			return new ApiResponse(HttpStatus.OK, "Member details saved successfully", false);
@@ -92,7 +93,7 @@ public class MemberServiceImpl implements MemberService {
 					if (extMemberObj.getProfileUrl() != null) {
 						s3ServiceConfig.deleteFile(extMemberObj.getProfileUrl());
 					}
-					String newProfileUrl = s3ServiceConfig.uploadFile(profileImg);
+					String newProfileUrl = s3ServiceConfig.uploadFile(profileImg, id);
 					extMemberObj.setProfileUrl(newProfileUrl);
 				}
 				if (ObjectUtils.isNotEmpty(name)) {
