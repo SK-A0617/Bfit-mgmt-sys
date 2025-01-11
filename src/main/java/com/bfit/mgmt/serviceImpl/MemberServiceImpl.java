@@ -129,10 +129,13 @@ public class MemberServiceImpl implements MemberService {
 			}
 			var memberPresentRes = memberRepo.findById(id);
 			if (!ObjectUtils.isEmpty(memberPresentRes)) {
-				if (memberPresentRes.get().getProfileUrl() != null) {
-					s3ServiceConfig.deleteFile(memberPresentRes.get().getProfileUrl());
-				}
-				memberRepo.deleteById(id);
+//				if (memberPresentRes.get().getProfileUrl() != null) {
+//					s3ServiceConfig.deleteFile(memberPresentRes.get().getProfileUrl());
+//				}
+				var memberObj = memberPresentRes.get();
+				memberObj.setStatus(false);
+				memberRepo.save(memberObj);
+				//memberRepo.deleteById(id);
 				return new ApiResponse(HttpStatus.OK, "Member deleted successfully", false);
 			}
 			log.error("Not found error getting member by ID: {}", id);
@@ -146,12 +149,24 @@ public class MemberServiceImpl implements MemberService {
 	public ApiResponse getMemberList() {
 		List<Member> memberListRes = null;
 		try {
-			memberListRes = memberRepo.findAll();
+			memberListRes = memberRepo.findByStatusTrue();
 			return new ApiResponse(HttpStatus.OK, memberListRes, false);
 		} catch (Exception e) {
 			log.error("Error while getting all the members");
 		}
 		return new ApiResponse(HttpStatus.BAD_REQUEST, "Error while getting list of data", true);
+	}
+
+	@Override
+	public ApiResponse getMemberCount() {
+		Integer countResult = null;
+		try {
+			countResult = (int) memberRepo.count();
+			return new ApiResponse(HttpStatus.OK, countResult, false);
+		} catch (Exception e) {
+			log.error("Error while getting member count");
+		}
+		return new ApiResponse(HttpStatus.BAD_REQUEST, "Error while getting member count", true);
 	}
 
 }

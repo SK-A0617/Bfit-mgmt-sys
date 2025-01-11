@@ -18,5 +18,7 @@ public interface CoachService {
 	ApiResponse dltCoachById(UUID id);
 
 	ApiResponse getCoachList();
+	
+	ApiResponse getCoachCount();
 
 }
