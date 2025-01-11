@@ -1,5 +1,6 @@
 package com.bfit.mgmt.repo;
 
+import java.util.List;
 import java.util.UUID;
 
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -9,5 +10,7 @@ import com.bfit.mgmt.entity.Coach;
 
 @Repository
 public interface CoachRepo extends JpaRepository<Coach, UUID> {
+
+	List<Coach> findByStatusTrue();
 
 }

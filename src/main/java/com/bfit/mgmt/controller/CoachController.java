@@ -70,5 +70,11 @@ public class CoachController {
 		var data = coachService.dltCoachById(id);
 		return new ResponseEntity<>(data, HttpStatus.OK);
 	}
+	
+	@GetMapping("/coachCount")
+	public ResponseEntity<ApiResponse> countOfCoach(){
+		var data = coachService.getCoachCount();
+		return new ResponseEntity<>(data, HttpStatus.OK);
+	}
 
 }

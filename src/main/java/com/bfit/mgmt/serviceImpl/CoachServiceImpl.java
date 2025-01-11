@@ -146,12 +146,24 @@ public class CoachServiceImpl implements CoachService {
 	public ApiResponse getCoachList() {
 		List<Coach> coachListRes = null;
 		try {
-			coachListRes = coachRepo.findAll();
+			coachListRes = coachRepo.findByStatusTrue();
 			return new ApiResponse(HttpStatus.OK, coachListRes, false);
 		} catch (Exception e) {
 			log.error("Error while getting all the coach");
 		}
 		return new ApiResponse(HttpStatus.BAD_REQUEST, "Error while getting list of data", false);
+	}
+
+	@Override
+	public ApiResponse getCoachCount() {
+		Integer countResult = null;
+		try {
+			countResult = (int) coachRepo.count();
+			return new ApiResponse(HttpStatus.OK, countResult, false);
+		} catch (Exception e) {
+			log.error("Error while getting coach count");
+		}
+		return new ApiResponse(HttpStatus.BAD_REQUEST, "Error while getting coach count", true);
 	}
 
 }

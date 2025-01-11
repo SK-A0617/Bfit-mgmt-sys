@@ -70,5 +70,11 @@ public class MemberController {
 		var data = memberService.dltMemberById(id);
 		return new ResponseEntity<>(data, HttpStatus.OK);
 	}
+	
+	@GetMapping("/memberCount")
+	public ResponseEntity<ApiResponse> countOfMember(){
+		var data = memberService.getMemberCount();
+		return new ResponseEntity<>(data, HttpStatus.OK);
+	}
 
 }

@@ -19,4 +19,6 @@ public interface MemberService {
 
 	ApiResponse getMemberList();
 
+	ApiResponse getMemberCount();
+
 }
