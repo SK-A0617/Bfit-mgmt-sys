@@ -1,0 +1,44 @@
+spring:
+  sql:
+    init:
+      schema-locations: classpath:db/schema/*
+      mode: always
+  jpa:
+    properties:
+      hibernate:
+        jdbc:
+          lob:
+            non_contextual_creation: 'true'
+    hibernate:
+      ddl-auto: update
+    show-sql: 'true'
+    open-in-view: 'false'
+  datasource:
+    password: postgres@123
+    driver-class-name: org.postgresql.Driver
+    username: postgres
+    url: jdbc:postgresql://localhost:5432/bfit-mgmt
+aws:
+  java:
+    v1:
+      printLocation: 'true'
+      disableDeprecationAnnouncement: 'true'
+  s3:
+    bucket-name: bfit-mgmt
+    base-url: https://bfit-mgmt.s3.us-east-1.amazonaws.com
+server:
+  servlet:
+    context-path: /bfit
+cloud:
+  aws:
+    region:
+      static: us-east-1
+    stack:
+      auto: 'false'
+logging:
+  level:
+    org:
+      hibernate:
+        type:
+          descriptor:
+            sql: trace
