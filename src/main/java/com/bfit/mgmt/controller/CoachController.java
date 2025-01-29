@@ -57,7 +57,7 @@ public class CoachController {
 
 	@PutMapping("/updateCoach/{id}")
 	public ResponseEntity<ApiResponse> updateCoach(@PathVariable UUID id,
-			@RequestPart("profileImg") MultipartFile profileImg, @RequestPart("coach") String coachJson)
+			@RequestPart(name = "profileImg", required = false) MultipartFile profileImg, @RequestPart("coach") String coachJson)
 			throws JsonProcessingException {
 		ObjectMapper objectMapper = new ObjectMapper();
 		var coachRequest = objectMapper.readValue(coachJson, CoachRequest.class);

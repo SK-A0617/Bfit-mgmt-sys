@@ -57,7 +57,7 @@ public class MemberController {
 
 	@PutMapping("/updateMember/{id}")
 	public ResponseEntity<ApiResponse> updateMember(@PathVariable UUID id,
-			@RequestPart("profileImg") MultipartFile profileImg, @RequestPart("member") String memberJson)
+			@RequestPart(name = "profileImg", required = false) MultipartFile profileImg, @RequestPart("member") String memberJson)
 			throws JsonProcessingException {
 		ObjectMapper objectMapper = new ObjectMapper();
 		var memberRequest = objectMapper.readValue(memberJson, MemberRequest.class);

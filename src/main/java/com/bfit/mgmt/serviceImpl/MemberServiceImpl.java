@@ -60,13 +60,14 @@ public class MemberServiceImpl implements MemberService {
 
 	@Override
 	public ApiResponse getMemberById(UUID id) {
-		Optional<Member> response = null;
+		Member response = null;
 		try {
-			response = memberRepo.findById(id);
+			response = memberRepo.findByIdAndStatus(id);
 			if (!ObjectUtils.isEmpty(response)) {
 				return new ApiResponse(HttpStatus.OK, response, false);
 			}
 			log.error("Not found error getting member by ID: {}", id);
+			return new ApiResponse(HttpStatus.OK, String.format("Not found error getting member by ID: %s", id), false);
 		} catch (Exception e) {
 			log.error("Error fetching member by ID: {}", e.getMessage(), e);
 		}
@@ -127,15 +128,14 @@ public class MemberServiceImpl implements MemberService {
 			if (ObjectUtils.isEmpty(id)) {
 				throw new ParameterMissingException("Id is missing");
 			}
-			var memberPresentRes = memberRepo.findById(id);
+			var memberPresentRes = memberRepo.findByIdAndStatus(id);
 			if (!ObjectUtils.isEmpty(memberPresentRes)) {
 //				if (memberPresentRes.get().getProfileUrl() != null) {
 //					s3ServiceConfig.deleteFile(memberPresentRes.get().getProfileUrl());
 //				}
-				var memberObj = memberPresentRes.get();
-				memberObj.setStatus(false);
-				memberRepo.save(memberObj);
-				//memberRepo.deleteById(id);
+				memberPresentRes.setStatus(false);
+				memberPresentRes.setUpdatedAt(new Timestamp(System.currentTimeMillis()));
+				memberRepo.save(memberPresentRes);
 				return new ApiResponse(HttpStatus.OK, "Member deleted successfully", false);
 			}
 			log.error("Not found error getting member by ID: {}", id);
