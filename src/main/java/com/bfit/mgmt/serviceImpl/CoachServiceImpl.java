@@ -60,13 +60,14 @@ public class CoachServiceImpl implements CoachService {
 
 	@Override
 	public ApiResponse getCoachById(UUID id) {
-		Optional<Coach> response = null;
+		Coach response = null;
 		try {
-			response = coachRepo.findById(id);
+			response = coachRepo.findByIdAndStatus(id);
 			if (!ObjectUtils.isEmpty(response)) {
 				return new ApiResponse(HttpStatus.OK, response, false);
 			}
-			log.error("Not found error getting member by ID: {}", id);
+			log.error("Not found error getting coach by ID: {}", id);
+			return new ApiResponse(HttpStatus.OK, String.format("Not found error getting coach by ID: %s", id), false);
 		} catch (Exception e) {
 			log.error("Error fetching coach by ID: {}", e.getMessage(), e);
 		}
@@ -127,12 +128,14 @@ public class CoachServiceImpl implements CoachService {
 			if (ObjectUtils.isEmpty(id)) {
 				throw new ParameterMissingException("Id is missing");
 			}
-			var coachPresentRes = coachRepo.findById(id);
+			var coachPresentRes = coachRepo.findByIdAndStatus(id);
 			if (!ObjectUtils.isEmpty(coachPresentRes)) {
-				if (coachPresentRes.get().getProfileUrl() != null) {
-					s3ServiceConfig.deleteFile(coachPresentRes.get().getProfileUrl());
-				}
-				coachRepo.deleteById(id);
+//				if (coachPresentRes.getProfileUrl() != null) {
+//					s3ServiceConfig.deleteFile(coachPresentRes.getProfileUrl());
+//				}
+				coachPresentRes.setStatus(false);
+				coachPresentRes.setUpdatedAt(new Timestamp(System.currentTimeMillis()));
+				coachRepo.save(coachPresentRes);
 				return new ApiResponse(HttpStatus.OK, "Coach deleted successfully", false);
 			}
 			log.error("Not found error getting coach by ID: {}", id);

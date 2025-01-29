@@ -52,10 +52,10 @@ public class AdminServiceImpl implements AdminService {
 		try {
 			response = adminRepo.findById(id);
 			if (!ObjectUtils.isEmpty(response)) {
-				log.error("Not found error getting member by ID: {}", id);
 				return new ApiResponse(HttpStatus.OK, response, false);
 			}
-		log.error("Not found error getting member by ID: {}", id);
+			log.error("Not found error getting admin by ID: {}", id);
+			return new ApiResponse(HttpStatus.OK, String.format("Not found error getting admin by ID: %s", id), false);
 		} catch (Exception e) {
 			log.error("Error fetching admin by ID: {}", id, e.getMessage(), e);
 		}
