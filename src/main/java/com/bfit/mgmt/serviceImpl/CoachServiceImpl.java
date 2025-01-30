@@ -2,10 +2,11 @@ package com.bfit.mgmt.serviceImpl;
 
 import java.sql.Timestamp;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.ObjectUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,6 +19,7 @@ import com.bfit.mgmt.entity.Coach;
 import com.bfit.mgmt.exceptions.ParameterMissingException;
 import com.bfit.mgmt.repo.CoachRepo;
 import com.bfit.mgmt.request.CoachRequest;
+import com.bfit.mgmt.response.CoachResponse;
 import com.bfit.mgmt.service.CoachService;
 import com.bfit.mgmt.util.ApiResponse;
 
@@ -60,23 +62,26 @@ public class CoachServiceImpl implements CoachService {
 
 	@Override
 	public ApiResponse getCoachById(UUID id) {
-		Coach response = null;
+		Coach coach = null;
 		try {
-			response = coachRepo.findByIdAndStatus(id);
-			if (!ObjectUtils.isEmpty(response)) {
-				return new ApiResponse(HttpStatus.OK, response, false);
+			coach = coachRepo.findByIdAndStatus(id);
+			if (!ObjectUtils.isEmpty(coach)) {
+				CoachResponse coachResponse = new CoachResponse(coach.getId(), coach.getProfileUrl(),
+						coach.getCoachName(), coach.getEmail(), coach.getPhoneNumber(), coach.getStatus(),
+						coach.getJoiningDate());
+				return new ApiResponse(HttpStatus.OK, coachResponse, false);
 			}
 			log.error("Not found error getting coach by ID: {}", id);
 			return new ApiResponse(HttpStatus.OK, String.format("Not found error getting coach by ID: %s", id), false);
 		} catch (Exception e) {
 			log.error("Error fetching coach by ID: {}", e.getMessage(), e);
 		}
-		return new ApiResponse(HttpStatus.BAD_REQUEST, response, false);
+		return new ApiResponse(HttpStatus.BAD_REQUEST, "Error while getting data", false);
 	}
 
 	@Override
 	public ApiResponse updateCoach(UUID id, MultipartFile profileImg, CoachRequest updatedCoach) {
-		Optional<Coach> response = null;
+		Coach coach = null;
 		try {
 			if (ObjectUtils.isEmpty(id)) {
 				throw new ParameterMissingException("Id is missing");
@@ -111,7 +116,9 @@ public class CoachServiceImpl implements CoachService {
 				}
 				extCoachObj.setUpdatedAt(new Timestamp(System.currentTimeMillis()));
 				coachRepo.save(extCoachObj);
-				response = coachRepo.findById(id);
+				coach = coachRepo.findByIdAndStatus(id);
+				CoachResponse response = new CoachResponse(coach.getId(), coach.getProfileUrl(), coach.getCoachName(),
+						coach.getEmail(), coach.getPhoneNumber(), coach.getStatus(), coach.getJoiningDate());
 				return new ApiResponse(HttpStatus.OK, "Coach details updated successfully", response, false);
 			} else {
 				log.error("Not found error getting coach by ID: {}", id);
@@ -147,10 +154,14 @@ public class CoachServiceImpl implements CoachService {
 
 	@Override
 	public ApiResponse getCoachList() {
-		List<Coach> coachListRes = null;
+		List<CoachResponse> coachResponses = new ArrayList<>();
 		try {
-			coachListRes = coachRepo.findByStatusTrue();
-			return new ApiResponse(HttpStatus.OK, coachListRes, false);
+			List<Coach> coachListRes = coachRepo.findByStatusTrue();
+			coachResponses = coachListRes.stream()
+					.map(coach -> new CoachResponse(coach.getId(), coach.getProfileUrl(), coach.getCoachName(),
+							coach.getEmail(), coach.getPhoneNumber(), coach.getStatus(), coach.getJoiningDate()))
+					.collect(Collectors.toList());
+			return new ApiResponse(HttpStatus.OK, coachResponses, false);
 		} catch (Exception e) {
 			log.error("Error while getting all the coach");
 		}
