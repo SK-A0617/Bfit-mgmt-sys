@@ -2,10 +2,11 @@ package com.bfit.mgmt.serviceImpl;
 
 import java.sql.Timestamp;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.ObjectUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,6 +19,7 @@ import com.bfit.mgmt.entity.Member;
 import com.bfit.mgmt.exceptions.ParameterMissingException;
 import com.bfit.mgmt.repo.MemberRepo;
 import com.bfit.mgmt.request.MemberRequest;
+import com.bfit.mgmt.response.MemberResponse;
 import com.bfit.mgmt.service.MemberService;
 import com.bfit.mgmt.util.ApiResponse;
 
@@ -60,11 +62,14 @@ public class MemberServiceImpl implements MemberService {
 
 	@Override
 	public ApiResponse getMemberById(UUID id) {
-		Member response = null;
+		Member member = null;
 		try {
-			response = memberRepo.findByIdAndStatus(id);
-			if (!ObjectUtils.isEmpty(response)) {
-				return new ApiResponse(HttpStatus.OK, response, false);
+			member = memberRepo.findByIdAndStatus(id);
+			if (!ObjectUtils.isEmpty(member)) {
+				MemberResponse memberResponse = new MemberResponse(member.getId(), member.getProfileUrl(),
+						member.getMemberName(), member.getEmail(), member.getPhoneNumber(), member.getStatus(),
+						member.getJoiningDate());
+				return new ApiResponse(HttpStatus.OK, memberResponse, false);
 			}
 			log.error("Not found error getting member by ID: {}", id);
 			return new ApiResponse(HttpStatus.OK, String.format("Not found error getting member by ID: %s", id), false);
@@ -76,7 +81,7 @@ public class MemberServiceImpl implements MemberService {
 
 	@Override
 	public ApiResponse updateMember(UUID id, MultipartFile profileImg, MemberRequest updatedMember) {
-		Optional<Member> response = null;
+		Member member = null;
 		try {
 			if (ObjectUtils.isEmpty(id)) {
 				throw new ParameterMissingException("Id is missing");
@@ -111,7 +116,10 @@ public class MemberServiceImpl implements MemberService {
 				}
 				extMemberObj.setUpdatedAt(new Timestamp(System.currentTimeMillis()));
 				memberRepo.save(extMemberObj);
-				response = memberRepo.findById(id);
+				member = memberRepo.findByIdAndStatus(id);
+				MemberResponse response = new MemberResponse(member.getId(), member.getProfileUrl(),
+						member.getMemberName(), member.getEmail(), member.getPhoneNumber(), member.getStatus(),
+						member.getJoiningDate());
 				return new ApiResponse(HttpStatus.OK, "Member details updated successfully", response, false);
 			} else {
 				log.error("Not found error getting member by ID: {}", id);
@@ -147,10 +155,13 @@ public class MemberServiceImpl implements MemberService {
 
 	@Override
 	public ApiResponse getMemberList() {
-		List<Member> memberListRes = null;
+		List<MemberResponse> memberResponses = new ArrayList<>();
 		try {
-			memberListRes = memberRepo.findByStatusTrue();
-			return new ApiResponse(HttpStatus.OK, memberListRes, false);
+			List<Member> memberListRes = memberRepo.findByStatusTrue();
+			memberResponses = memberListRes.stream()
+					.map(member -> new MemberResponse(member.getId(), member.getProfileUrl(), member.getMemberName(),
+							member.getEmail(), member.getPhoneNumber(), member.getStatus(), member.getJoiningDate())).collect(Collectors.toList());
+			return new ApiResponse(HttpStatus.OK, memberResponses, false);
 		} catch (Exception e) {
 			log.error("Error while getting all the members");
 		}
