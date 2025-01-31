@@ -117,10 +117,14 @@ public class MemberServiceImpl implements MemberService {
 				extMemberObj.setUpdatedAt(new Timestamp(System.currentTimeMillis()));
 				memberRepo.save(extMemberObj);
 				member = memberRepo.findByIdAndStatus(id);
-				MemberResponse response = new MemberResponse(member.getId(), member.getProfileUrl(),
-						member.getMemberName(), member.getEmail(), member.getPhoneNumber(), member.getStatus(),
-						member.getJoiningDate());
-				return new ApiResponse(HttpStatus.OK, "Member details updated successfully", response, false);
+				if(ObjectUtils.isNotEmpty(member)) {
+					MemberResponse response = new MemberResponse(member.getId(), member.getProfileUrl(),
+							member.getMemberName(), member.getEmail(), member.getPhoneNumber(), member.getStatus(),
+							member.getJoiningDate());
+					return new ApiResponse(HttpStatus.OK, "Member details updated successfully", response, false);
+				}
+				// this statement execute after updating the member status
+				return new ApiResponse(HttpStatus.OK, "Member details updated successfully", false);
 			} else {
 				log.error("Not found error getting member by ID: {}", id);
 			}

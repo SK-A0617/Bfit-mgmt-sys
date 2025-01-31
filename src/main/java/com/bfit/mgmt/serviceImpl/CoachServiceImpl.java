@@ -117,9 +117,13 @@ public class CoachServiceImpl implements CoachService {
 				extCoachObj.setUpdatedAt(new Timestamp(System.currentTimeMillis()));
 				coachRepo.save(extCoachObj);
 				coach = coachRepo.findByIdAndStatus(id);
-				CoachResponse response = new CoachResponse(coach.getId(), coach.getProfileUrl(), coach.getCoachName(),
-						coach.getEmail(), coach.getPhoneNumber(), coach.getStatus(), coach.getJoiningDate());
-				return new ApiResponse(HttpStatus.OK, "Coach details updated successfully", response, false);
+				if(ObjectUtils.isNotEmpty(coach)) {
+					CoachResponse response = new CoachResponse(coach.getId(), coach.getProfileUrl(), coach.getCoachName(),
+							coach.getEmail(), coach.getPhoneNumber(), coach.getStatus(), coach.getJoiningDate());
+					return new ApiResponse(HttpStatus.OK, "Coach details updated successfully", response, false);					
+				}
+				// this statement execute after updating the coach status 
+				return new ApiResponse(HttpStatus.OK, "Coach details updated successfully", false);
 			} else {
 				log.error("Not found error getting coach by ID: {}", id);
 			}
