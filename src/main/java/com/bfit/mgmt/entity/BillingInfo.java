@@ -11,12 +11,10 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
-import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 
-@AllArgsConstructor
 @NoArgsConstructor
 @Data
 @Entity
@@ -56,4 +54,19 @@ public class BillingInfo {
 	@Column(name = "updated_at", nullable = false)
 	private Timestamp updatedAt;
 
+	public BillingInfo(UUID billingId, UUID memberId, LocalDate joiningDate, LocalDate dueDate, String category,
+			Integer paidAmount, Integer balanceAmount, String paymentStatus, Timestamp createdAt, Timestamp updatedAt) {
+		super();
+		this.billingId = billingId;
+		this.memberId = memberId;
+		this.joiningDate = joiningDate;
+		this.dueDate = dueDate;
+		this.category = category;
+		this.paidAmount = paidAmount;
+		this.balanceAmount = balanceAmount;
+		this.paymentStatus = paymentStatus;
+		this.createdAt = createdAt;
+		this.updatedAt = updatedAt;
+	}
+	
 }

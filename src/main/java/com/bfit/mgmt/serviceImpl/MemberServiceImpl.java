@@ -15,13 +15,16 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.bfit.mgmt.config.S3ServiceConfig;
+import com.bfit.mgmt.entity.BillingInfo;
 import com.bfit.mgmt.entity.Member;
 import com.bfit.mgmt.exceptions.ParameterMissingException;
+import com.bfit.mgmt.repo.BillingInfoRepo;
 import com.bfit.mgmt.repo.MemberRepo;
 import com.bfit.mgmt.request.MemberRequest;
 import com.bfit.mgmt.response.MemberResponse;
 import com.bfit.mgmt.service.MemberService;
 import com.bfit.mgmt.util.ApiResponse;
+import com.bfit.mgmt.util.Constants;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -34,11 +37,16 @@ public class MemberServiceImpl implements MemberService {
 
 	@Autowired
 	private MemberRepo memberRepo;
+	
+	@Autowired
+	private BillingInfoRepo billingInfoRepo;
+	
 
 	@Override
-	public ApiResponse createMember(MultipartFile profileImg, MemberRequest memberRequest) {
+	public ApiResponse createMember(MultipartFile profileImg, MemberRequest memberRequest, String category, String paymentStatus) {
 		try {
 			String profileUrl = null;
+			var price = 0;
 			if (ObjectUtils.isEmpty(memberRequest.getMemberName()) || ObjectUtils.isEmpty(memberRequest.getEmail())
 					|| ObjectUtils.isEmpty(memberRequest.getPhoneNumber())) {
 				throw new ParameterMissingException("All input parameters are required");
@@ -53,6 +61,18 @@ public class MemberServiceImpl implements MemberService {
 			var memberReqBdy = new Member(id, profileUrl, memberRequest.getMemberName(), memberRequest.getEmail(),
 					memberRequest.getPhoneNumber(), status, joiningDate, createdAt, createdAt);
 			memberRepo.save(memberReqBdy);
+			// Create and save BillingInfo
+	        UUID billingId = UUID.randomUUID();
+	        var dueDate = joiningDate.plusMonths(1);
+	        if(category.equalsIgnoreCase(Constants.GENERAL_CATEGORY)) {
+	        	price = 700;
+	        }else if(category.equalsIgnoreCase(Constants.CARDIO_CATEGORY)){
+	        	price = 300;
+	        }else if(category.equalsIgnoreCase(Constants.GENERAL_AND_CARDIO_CATEGORY)){
+	        	price = 1000;
+	        }
+	        var billingInfo = new BillingInfo(billingId,id,joiningDate,dueDate,"General",price,0,paymentStatus,createdAt,createdAt);
+	        billingInfoRepo.save(billingInfo);
 			return new ApiResponse(HttpStatus.OK, "Member details saved successfully", false);
 		} catch (Exception e) {
 			log.error("Failed error while persist member: {}", e.getMessage(), e);
