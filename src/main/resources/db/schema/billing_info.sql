@@ -10,6 +10,7 @@ CREATE TABLE IF NOT EXISTS public.billing_info (
 	joining_date date NOT NULL,
 	due_date date NOT NULL,
 	category varchar(255) NOT NULL,
+	category_amount int4 NOT NULL,
 	paid_amount int4 NOT NULL,
 	balance_amount int4 NOT NULL,
 	payment_status varchar(255) NOT NULL,

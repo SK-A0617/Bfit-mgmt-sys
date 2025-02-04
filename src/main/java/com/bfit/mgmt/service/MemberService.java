@@ -11,7 +11,7 @@ public interface MemberService {
 
 	ApiResponse getMemberById(UUID id);
 
-	ApiResponse createMember(MultipartFile profileImg, MemberRequest memberRequest, String category, String paymentStatus);
+	ApiResponse createMember(MultipartFile profileImg, MemberRequest memberRequest);
 
 	ApiResponse updateMember(UUID id, MultipartFile profileImg, MemberRequest memberRequest);
 

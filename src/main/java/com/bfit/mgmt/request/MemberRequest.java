@@ -9,4 +9,6 @@ public class MemberRequest {
 	public String email;
 	public String phoneNumber;
 	public Boolean status;
+	public String category;
+	public Integer paidAmount;
 }

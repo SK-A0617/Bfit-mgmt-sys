@@ -36,10 +36,10 @@ public class MemberController {
 	@Operation
 	public ResponseEntity<ApiResponse> createMember(
 			@RequestPart(name = "profileImg", required = false)MultipartFile profileImg,
-			@RequestPart("member") String memberJson, String category, String paymentStatus) throws JsonProcessingException {
+			@RequestPart("member") String memberJson) throws JsonProcessingException {
 		ObjectMapper objectMapper = new ObjectMapper();
 		var memberRequest = objectMapper.readValue(memberJson, MemberRequest.class);
-		var data = memberService.createMember(profileImg, memberRequest,category,paymentStatus);
+		var data = memberService.createMember(profileImg, memberRequest);
 		return new ResponseEntity<>(data, HttpStatus.OK);
 	}
 
