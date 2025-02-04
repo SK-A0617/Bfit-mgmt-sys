@@ -42,3 +42,8 @@ logging:
         type:
           descriptor:
             sql: trace
+category:
+  price:
+    general: 700
+    cardio: 300
+    general-and-cardio: 1000

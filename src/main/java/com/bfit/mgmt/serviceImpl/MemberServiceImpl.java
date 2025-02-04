@@ -37,18 +37,18 @@ public class MemberServiceImpl implements MemberService {
 
 	@Autowired
 	private MemberRepo memberRepo;
-	
+
 	@Autowired
 	private BillingInfoRepo billingInfoRepo;
-	
 
 	@Override
-	public ApiResponse createMember(MultipartFile profileImg, MemberRequest memberRequest, String category, String paymentStatus) {
+	public ApiResponse createMember(MultipartFile profileImg, MemberRequest memberRequest) {
 		try {
-			String profileUrl = null;
-			var price = 0;
+			var profileUrl = "";
 			if (ObjectUtils.isEmpty(memberRequest.getMemberName()) || ObjectUtils.isEmpty(memberRequest.getEmail())
-					|| ObjectUtils.isEmpty(memberRequest.getPhoneNumber())) {
+					|| ObjectUtils.isEmpty(memberRequest.getPhoneNumber())
+					|| ObjectUtils.isEmpty(memberRequest.getCategory())
+					|| ObjectUtils.isEmpty(memberRequest.getPaidAmount())) {
 				throw new ParameterMissingException("All input parameters are required");
 			}
 			UUID id = UUID.randomUUID();
@@ -61,23 +61,35 @@ public class MemberServiceImpl implements MemberService {
 			var memberReqBdy = new Member(id, profileUrl, memberRequest.getMemberName(), memberRequest.getEmail(),
 					memberRequest.getPhoneNumber(), status, joiningDate, createdAt, createdAt);
 			memberRepo.save(memberReqBdy);
-			// Create and save BillingInfo
-	        UUID billingId = UUID.randomUUID();
-	        var dueDate = joiningDate.plusMonths(1);
-	        if(category.equalsIgnoreCase(Constants.GENERAL_CATEGORY)) {
-	        	price = 700;
-	        }else if(category.equalsIgnoreCase(Constants.CARDIO_CATEGORY)){
-	        	price = 300;
-	        }else if(category.equalsIgnoreCase(Constants.GENERAL_AND_CARDIO_CATEGORY)){
-	        	price = 1000;
-	        }
-	        var billingInfo = new BillingInfo(billingId,id,joiningDate,dueDate,"General",price,0,paymentStatus,createdAt,createdAt);
-	        billingInfoRepo.save(billingInfo);
+			var billingInfo = saveBillingInfo(id, joiningDate, memberRequest);
+			billingInfoRepo.save(billingInfo);
 			return new ApiResponse(HttpStatus.OK, "Member details saved successfully", false);
 		} catch (Exception e) {
 			log.error("Failed error while persist member: {}", e.getMessage(), e);
 		}
 		return new ApiResponse(HttpStatus.BAD_REQUEST, "Error while saving data", true);
+	}
+
+	public BillingInfo saveBillingInfo(UUID id, LocalDate joiningDate, MemberRequest memberRequest) {
+		UUID billingId = UUID.randomUUID();
+		var dueDate = joiningDate.plusMonths(1);
+		var categoryPrice = Constants.GENERAL_CAT_AMT;
+		var paymentStatus = "";
+		var createdAt = new Timestamp(System.currentTimeMillis());
+		if (memberRequest.getCategory().equalsIgnoreCase(Constants.CARDIO_CATEGORY)) {
+			categoryPrice = Constants.CARDIO_CAT_AMT;
+		} else if (memberRequest.getCategory().equalsIgnoreCase(Constants.GENERAL_AND_CARDIO_CATEGORY)) {
+			categoryPrice = Constants.GENERAL_AND_CARDIO_CAT_AMT;
+		}
+		var balanceAmt = categoryPrice - memberRequest.getPaidAmount();
+		if (balanceAmt != 0) {
+			paymentStatus = Constants.YET_TO_BE_PAID;
+		} else {
+			paymentStatus = Constants.PAID;
+		}
+		var billingInfoObj = new BillingInfo(billingId, id, joiningDate, dueDate, memberRequest.getCategory(),
+				categoryPrice, memberRequest.getPaidAmount(), balanceAmt, paymentStatus, createdAt, createdAt);
+		return billingInfoObj;
 	}
 
 	@Override
@@ -137,7 +149,7 @@ public class MemberServiceImpl implements MemberService {
 				extMemberObj.setUpdatedAt(new Timestamp(System.currentTimeMillis()));
 				memberRepo.save(extMemberObj);
 				member = memberRepo.findByIdAndStatus(id);
-				if(ObjectUtils.isNotEmpty(member)) {
+				if (ObjectUtils.isNotEmpty(member)) {
 					MemberResponse response = new MemberResponse(member.getId(), member.getProfileUrl(),
 							member.getMemberName(), member.getEmail(), member.getPhoneNumber(), member.getStatus(),
 							member.getJoiningDate());
@@ -184,7 +196,8 @@ public class MemberServiceImpl implements MemberService {
 			List<Member> memberListRes = memberRepo.findByStatusTrue();
 			memberResponses = memberListRes.stream()
 					.map(member -> new MemberResponse(member.getId(), member.getProfileUrl(), member.getMemberName(),
-							member.getEmail(), member.getPhoneNumber(), member.getStatus(), member.getJoiningDate())).collect(Collectors.toList());
+							member.getEmail(), member.getPhoneNumber(), member.getStatus(), member.getJoiningDate()))
+					.collect(Collectors.toList());
 			return new ApiResponse(HttpStatus.OK, memberResponses, false);
 		} catch (Exception e) {
 			log.error("Error while getting all the members");
