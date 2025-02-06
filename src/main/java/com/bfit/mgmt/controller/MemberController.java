@@ -48,7 +48,13 @@ public class MemberController {
 		var data = memberService.getMemberById(id);
 		return new ResponseEntity<>(data, HttpStatus.OK);
 	}
-
+	
+	@GetMapping("/memberBillingInfo")
+	public ResponseEntity<ApiResponse> getMemberBillingById(@RequestParam UUID id){
+		var data = memberService.getMemberBillingById(id);
+		return new ResponseEntity<>(data, HttpStatus.OK);
+	}
+	
 	@GetMapping("/getAllMemberList")
 	public ResponseEntity<ApiResponse> getMemberList() {
 		var data = memberService.getMemberList();
