@@ -21,6 +21,7 @@ import com.bfit.mgmt.exceptions.ParameterMissingException;
 import com.bfit.mgmt.repo.BillingInfoRepo;
 import com.bfit.mgmt.repo.MemberRepo;
 import com.bfit.mgmt.request.MemberRequest;
+import com.bfit.mgmt.response.BillingResponse;
 import com.bfit.mgmt.response.MemberResponse;
 import com.bfit.mgmt.service.MemberService;
 import com.bfit.mgmt.util.ApiResponse;
@@ -100,7 +101,7 @@ public class MemberServiceImpl implements MemberService {
 			if (!ObjectUtils.isEmpty(member)) {
 				MemberResponse memberResponse = new MemberResponse(member.getId(), member.getProfileUrl(),
 						member.getMemberName(), member.getEmail(), member.getPhoneNumber(), member.getStatus(),
-						member.getJoiningDate());
+						member.getJoiningDate(), null);
 				return new ApiResponse(HttpStatus.OK, memberResponse, false);
 			}
 			log.error("Not found error getting member by ID: {}", id);
@@ -152,7 +153,7 @@ public class MemberServiceImpl implements MemberService {
 				if (ObjectUtils.isNotEmpty(member)) {
 					MemberResponse response = new MemberResponse(member.getId(), member.getProfileUrl(),
 							member.getMemberName(), member.getEmail(), member.getPhoneNumber(), member.getStatus(),
-							member.getJoiningDate());
+							member.getJoiningDate(), null);
 					return new ApiResponse(HttpStatus.OK, "Member details updated successfully", response, false);
 				}
 				// this statement execute after updating the member status
@@ -196,7 +197,8 @@ public class MemberServiceImpl implements MemberService {
 			List<Member> memberListRes = memberRepo.findByStatusTrue();
 			memberResponses = memberListRes.stream()
 					.map(member -> new MemberResponse(member.getId(), member.getProfileUrl(), member.getMemberName(),
-							member.getEmail(), member.getPhoneNumber(), member.getStatus(), member.getJoiningDate()))
+							member.getEmail(), member.getPhoneNumber(), member.getStatus(), member.getJoiningDate(),
+							null))
 					.collect(Collectors.toList());
 			return new ApiResponse(HttpStatus.OK, memberResponses, false);
 		} catch (Exception e) {
@@ -215,6 +217,30 @@ public class MemberServiceImpl implements MemberService {
 			log.error("Error while getting member count");
 		}
 		return new ApiResponse(HttpStatus.BAD_REQUEST, "Error while getting member count", true);
+	}
+
+	@Override
+	public ApiResponse getMemberBillingById(UUID id) {
+		Member member = null;
+		try {
+			member = memberRepo.findByIdAndStatus(id);
+			if (!ObjectUtils.isEmpty(member)) {
+				BillingInfo biObj = memberRepo.findByMemberId(id);
+				BillingResponse billingResponse = new BillingResponse(biObj.getBillingId(), biObj.getMemberId(),
+						biObj.getJoiningDate(), biObj.getDueDate(), biObj.getCategory(), biObj.getPaidAmount(),
+						biObj.getBalanceAmount(), biObj.getPaymentStatus());
+				MemberResponse memberResponse = new MemberResponse(member.getId(), member.getProfileUrl(),
+						member.getMemberName(), member.getEmail(), member.getPhoneNumber(), member.getStatus(),
+						member.getJoiningDate(), billingResponse);
+				return new ApiResponse(HttpStatus.OK, memberResponse, false);
+			}
+			log.error("Not found error getting member billing by ID: {}", id);
+			return new ApiResponse(HttpStatus.OK, String.format("Not found error getting member billing by ID: %s", id),
+					false);
+		} catch (Exception e) {
+			log.error("Error fetching member billing by ID: {}", e.getMessage(), e);
+		}
+		return new ApiResponse(HttpStatus.BAD_REQUEST, "Error while getting data", true);
 	}
 
 }

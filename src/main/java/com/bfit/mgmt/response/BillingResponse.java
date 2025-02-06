@@ -8,18 +8,19 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-@Setter
 @Getter
+@Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class MemberResponse {
-
-	public UUID id;
-	public String profileUrl;
-	public String memberName;
-	public String email;
-	public String phoneNumber;
-	public Boolean status;
+public class BillingResponse {
+	
+	public UUID billingId;
+	public UUID memberId;
 	public LocalDate joiningDate;
-	public BillingResponse billingResponse;
+	public LocalDate dueDate;
+	public String category;
+	public Integer paidAmount;
+	public Integer balanceAmount;
+	public String paymentStatus;
+
 }
