@@ -18,6 +18,17 @@ spring:
     driver-class-name: org.postgresql.Driver
     username: postgres
     url: jdbc:postgresql://localhost:5432/bfit-mgmt
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: aakashmoorthy16@gmail.com
+    password: kyfx vsqi lhnm dwea
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
 aws:
   java:
     v1:
