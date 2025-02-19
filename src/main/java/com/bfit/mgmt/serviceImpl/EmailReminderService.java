@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service;
 import com.bfit.mgmt.entity.BillingInfo;
 import com.bfit.mgmt.entity.Member;
 import com.bfit.mgmt.repo.BillingInfoRepo;
+import com.bfit.mgmt.repo.MemberRepo;
 
 import jakarta.mail.internet.MimeMessage;
 
@@ -26,7 +27,7 @@ public class EmailReminderService {
 	private BillingInfoRepo billingInfoRepo;
 
 	@Autowired
-	private Member member;
+	private MemberRepo memberRepo;
 
 	@Value("${spring.mail.username}")
 	private String senderMail;
@@ -41,21 +42,26 @@ public class EmailReminderService {
 		List<BillingInfo> membersDueYesterday = billingInfoRepo.findByDueDate(oneDayBefore);
 		List<BillingInfo> membersDueToday = billingInfoRepo.findByDueDate(today);
 		List<BillingInfo> membersDueTomorrow = billingInfoRepo.findByDueDate(oneDayAfter);
+		
+		Member member = null;
 
 		// 1st Reminder
 		for (BillingInfo billingInfo : membersDueYesterday) {
+			member = memberRepo.findById(billingInfo.getMemberId()).orElseThrow(()-> new RuntimeException("Member Not Found"));
 			sendReminderEmail(member.getEmail(), "Payment Reminder: Due Tomorrow!", "Dear " + member.getMemberName()
 					+ ",\nYour gym fee is due tomorrow (" + billingInfo.getDueDate() + "). Please make your payment.");
 		}
 
 		// 2nd Reminder
 		for (BillingInfo billingInfo : membersDueToday) {
+			member = memberRepo.findById(billingInfo.getMemberId()).orElseThrow(()-> new RuntimeException("Member Not Found"));
 			sendReminderEmail(member.getEmail(), "Payment Due Today!", "Dear " + member.getMemberName()
 					+ ",\nYour gym fee is due today (" + billingInfo.getDueDate() + "). Please make your payment.");
 		}
 
 		// 3rd/Final Reminder
 		for (BillingInfo billingInfo : membersDueTomorrow) {
+			member = memberRepo.findById(billingInfo.getMemberId()).orElseThrow(()-> new RuntimeException("Member Not Found"));
 			sendReminderEmail(member.getEmail(), "Final Reminder: Payment Overdue!",
 					"Dear " + member.getMemberName() + ",\nYour gym fee was due on (" + billingInfo.getDueDate()
 							+ "). Please pay immediately to avoid service disruption.");
