@@ -8,10 +8,10 @@ on:
 
 jobs:
   send-email:
-    runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ubuntu-latest, windows-latest]
+        os: [ubuntu-latest, windows-2022]
+    runs-on: ${{ matrix.os }}
 
     steps:
       - name: Checkout repository
@@ -26,4 +26,4 @@ jobs:
       - name: Build and Run Email Reminder Job
         run: |
           mvn clean install
-          java -jar target/*.jar
+          java -jar target/bfit-mgmt-system.jar
