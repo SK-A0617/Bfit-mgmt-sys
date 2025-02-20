@@ -8,47 +8,54 @@ import com.bfit.mgmt.request.MemberRequest;
 import com.bfit.mgmt.util.ApiResponse;
 
 public interface MemberService {
-
-	/*
+	
+	/**
 	 * Get Member By Id
-	 * @Param Id
+	 * @param id
+	 * @return
 	 */
 	ApiResponse getMemberById(UUID id);
-
-	/*
+	
+	/**
 	 * Create Member
-	 * @Param profileImg
-	 * @Body memberRequest
+	 * @param profileImg
+	 * @param memberRequest
+	 * @return
 	 */
 	ApiResponse createMember(MultipartFile profileImg, MemberRequest memberRequest);
 	
-	/*
+	/**
 	 * Update Member
-	 * @Param id
-	 * @Param profileImg
-	 * @Body memberRequest
+	 * @param id
+	 * @param profileImg
+	 * @param memberRequest
+	 * @return
 	 */
 	ApiResponse updateMember(UUID id, MultipartFile profileImg, MemberRequest memberRequest);
-
-	/*
+	
+	/**
 	 * Delete Member By Id
-	 * @Param id
+	 * @param id
+	 * @return
 	 */
 	ApiResponse dltMemberById(UUID id);
 
-	/*
+	/**
 	 * Get Member List
+	 * @return
 	 */
 	ApiResponse getMemberList();
-
-	/*
+	
+	/**
 	 * Get Member Count
+	 * @return
 	 */
 	ApiResponse getMemberCount();
 	
-	/*
+	/**
 	 * Get Member Billing By Id
-	 * @Param id
+	 * @param id
+	 * @return
 	 */
 	ApiResponse getMemberBillingById(UUID id);
 
