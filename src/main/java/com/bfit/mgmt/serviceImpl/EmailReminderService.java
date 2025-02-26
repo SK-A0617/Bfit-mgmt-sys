@@ -1,13 +1,12 @@
 package com.bfit.mgmt.serviceImpl;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.UUID;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import org.apache.commons.lang3.ObjectUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,7 +29,7 @@ import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @Service
-public class EmailReminderService implements EmailRemService{
+public class EmailReminderService implements EmailRemService {
 
 	@Autowired
 	private JavaMailSender javaMailSender;
@@ -45,64 +44,100 @@ public class EmailReminderService implements EmailRemService{
 	private String senderMail;
 
 	@Override
-	@Scheduled(cron = "0 * * * * ?", zone = "Asia/Kolkata")// **Scheduled Task: Runs Daily at 6:30 AM**
+	@Scheduled(cron = "0 * * * * ?", zone = "Asia/Kolkata") // **Scheduled Task: Runs Daily at 6:30 AM**
 	public ApiResponse sendRemainderMail() {
-		
+
 		log.info("***** Start Triggering Reminder Email Service *****");
 
 		LocalDate today = LocalDate.now();
 		LocalDate oneDayBefore = today.minusDays(1);
 		LocalDate oneDayAfter = today.plusDays(1);
-		
+
+		System.out.println("today >>>>" + today.toString());
+
 		try {
 			List<BillingInfo> membersDueYesterday = billingInfoRepo.findByDueDate(oneDayBefore);
 			List<BillingInfo> membersDueToday = billingInfoRepo.findByDueDate(today);
 			List<BillingInfo> membersDueTomorrow = billingInfoRepo.findByDueDate(oneDayAfter);
-			
-			Set<UUID> memberIds = Stream.of(membersDueYesterday, membersDueToday, membersDueTomorrow)
-					.flatMap(List::stream)
-					.map(BillingInfo::getMemberId)
-					.collect(Collectors.toSet());
-			
-			Map<UUID, Member> memberMap = memberRepo.findByIdIn(memberIds)
-					.stream()
-					.collect(Collectors.toMap(Member::getId, Function.identity()));
 
-			// 1st Reminder
-			if(ObjectUtils.isNotEmpty(today.minusDays(1))) {
-				membersDueYesterday.forEach(billingInfo ->
-				sendReminderEmail(memberMap.get(billingInfo.getMemberId()), "Payment Reminder: Due Tomorrow!", "Dear " + memberMap.get(billingInfo.getMemberId()).getMemberName()
-						+ ",\nYour gym fee is due tomorrow (" + billingInfo.getDueDate() + "). Please make your payment."));				
+			// 1st Reminder (Before Day)
+			if (ObjectUtils.isNotEmpty(membersDueYesterday)) {
+				List<Member> memberResp = new ArrayList<>();
+				for (BillingInfo billingInfoObj : membersDueYesterday) {
+					memberResp.add(memberRepo.findByIdAndStatus(billingInfoObj.getMemberId()));
+				}
+				log.info("1st Reminder (Before Day)");
+				log.info("MemberResponse >>>>" + memberResp.toString());
+
+				Map<UUID, Member> memberMap = memberResp.stream()
+						.collect(Collectors.toMap(Member::getId, Function.identity()));
+
+				log.info("memberMap >>>>" + memberMap);
+
+				membersDueYesterday.forEach(billingInfo -> sendReminderEmail(memberMap.get(billingInfo.getMemberId()),
+						"BFIT GYM - Payment Reminder: Due Tomorrow!",
+						"Dear " + memberMap.get(billingInfo.getMemberId()).getMemberName()
+								+ ",\nYour gym fee is due tomorrow (" + billingInfo.getDueDate() + "). Your due amt is "
+								+ billingInfo.getBalanceAmount() + "Rs. Please make your payment."));
 			}
 
-			// 2nd Reminder
-			if(ObjectUtils.isNotEmpty(today)) {
-				membersDueToday.forEach(billingInfo ->
-				sendReminderEmail(memberMap.get(billingInfo.getMemberId()), "Payment Due Today!", "Dear " + memberMap.get(billingInfo.getMemberId()).getMemberName()
-						+ ",\nYour gym fee is due today (" + billingInfo.getDueDate() + "). Please make your payment."));
+			// 2nd Reminder (On Day)
+			if (ObjectUtils.isNotEmpty(membersDueToday)) {
+				List<Member> memberResp = new ArrayList<>();
+				for (BillingInfo billingInfoObj : membersDueToday) {
+					memberResp.add(memberRepo.findByIdAndStatus(billingInfoObj.getMemberId()));
+				}
+				log.info("2nd Reminder (On Day)");
+				log.info("MemberResponse >>>>" + memberResp.toString());
+
+				Map<UUID, Member> memberMap = memberResp.stream()
+						.collect(Collectors.toMap(Member::getId, Function.identity()));
+
+				log.info("memberMap >>>>" + memberMap);
+
+				membersDueToday.forEach(billingInfo -> sendReminderEmail(memberMap.get(billingInfo.getMemberId()),
+						"BFIT GYM - Payment Due Today!",
+						"Dear " + memberMap.get(billingInfo.getMemberId()).getMemberName()
+								+ ",Your gym fee is due today (" + billingInfo.getDueDate() + "). Your due amt is "
+								+ billingInfo.getBalanceAmount() + "Rs. Please make your payment."));
 			}
-				
-			// 3rd/Final Reminder
-			if(ObjectUtils.isNotEmpty(today.plusDays(1))) {
-				membersDueTomorrow.forEach(billingInfo ->
-				sendReminderEmail(memberMap.get(billingInfo.getMemberId()), "Final Reminder: Payment Overdue!",
-						"Dear " + memberMap.get(billingInfo.getMemberId()).getMemberName() + ",\nYour gym fee was due on (" + billingInfo.getDueDate()
-								+ "). Please pay immediately to avoid service disruption."));
+
+			// 3rd Reminder (After Day)
+			if (ObjectUtils.isNotEmpty(membersDueTomorrow)) {
+				List<Member> memberResp = new ArrayList<>();
+				for (BillingInfo billingInfoObj : membersDueTomorrow) {
+					memberResp.add(memberRepo.findByIdAndStatus(billingInfoObj.getMemberId()));
+				}
+				log.info("3rd Reminder (After Day)");
+				log.info("MemberResponse >>>>" + memberResp.toString());
+
+				Map<UUID, Member> memberMap = memberResp.stream()
+						.collect(Collectors.toMap(Member::getId, Function.identity()));
+
+				log.info("memberMap >>>>" + memberMap);
+
+				membersDueTomorrow.forEach(billingInfo -> sendReminderEmail(memberMap.get(billingInfo.getMemberId()),
+						"BFIT GYM - Final Reminder: Payment Overdue!",
+						"Dear " + memberMap.get(billingInfo.getMemberId()).getMemberName()
+								+ ",Your gym fee was due on (" + billingInfo.getDueDate() + ").Your due amt is "
+								+ billingInfo.getBalanceAmount()
+								+ "Rs. Please pay immediately to avoid service disruption."));
 			}
+
 			return new ApiResponse(HttpStatus.OK, "Reminder email sent", false);
-		}catch(Exception exception) {
+		} catch (Exception exception) {
 			return new ApiResponse(HttpStatus.BAD_REQUEST, "Error while send the reminder email", true);
 		}
 	}
 
 	// Send Remainder Email
-	private void sendReminderEmail(Member member, String subject, String body){
-		
-		if(ObjectUtils.isEmpty(member)) {
+	private void sendReminderEmail(Member member, String subject, String body) {
+
+		if (ObjectUtils.isEmpty(member) || ObjectUtils.isEmpty(member.getEmail())) {
 			log.warn("Skipping email - Member not found");
 			return;
 		}
-		
+
 		try {
 			MimeMessage message = javaMailSender.createMimeMessage();
 			MimeMessageHelper helper = new MimeMessageHelper(message, true);
