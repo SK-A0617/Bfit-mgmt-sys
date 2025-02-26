@@ -1,7 +1,6 @@
 package com.bfit.mgmt.repo;
 
 import java.util.List;
-import java.util.Set;
 import java.util.UUID;
 
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -22,7 +21,7 @@ public interface MemberRepo extends JpaRepository<Member, UUID>{
 	BillingInfo findByMemberId(@Param("id")UUID id);
 	
 	@Query("SELECT m FROM Member m WHERE m.id IN : memberIds")
-	List<Member> findByIdIn(@Param("memberIds") Set<UUID> memberIds);
+	List<Member> findByIdIn(@Param("memberIds") List<UUID> memberIds);
 
 	List<Member> findByStatusTrue();
 
