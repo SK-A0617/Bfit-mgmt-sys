@@ -21,7 +21,6 @@ import com.bfit.mgmt.entity.BillingInfo;
 import com.bfit.mgmt.entity.Member;
 import com.bfit.mgmt.repo.BillingInfoRepo;
 import com.bfit.mgmt.repo.MemberRepo;
-import com.bfit.mgmt.service.EmailRemService;
 import com.bfit.mgmt.util.ApiResponse;
 
 import jakarta.mail.internet.MimeMessage;
@@ -29,7 +28,7 @@ import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @Service
-public class EmailReminderService implements EmailRemService {
+public class EmailReminderService {
 
 	@Autowired
 	private JavaMailSender javaMailSender;
@@ -43,42 +42,40 @@ public class EmailReminderService implements EmailRemService {
 	@Value("${spring.mail.username}")
 	private String senderMail;
 
-	@Override
-	@Scheduled(cron = "0 * * * * ?", zone = "Asia/Kolkata") // **Scheduled Task: Runs Daily at 6:30 AM**
+	@Scheduled(cron = "0 0 6 * * ?") // **Scheduled Task: Runs Daily at 6:00 AM**
 	public ApiResponse sendRemainderMail() {
 
 		log.info("***** Start Triggering Reminder Email Service *****");
 
 		LocalDate today = LocalDate.now();
-		LocalDate oneDayBefore = today.minusDays(1);
-		LocalDate oneDayAfter = today.plusDays(1);
-
-		System.out.println("today >>>>" + today.toString());
-
+		LocalDate onDayBefore = today.minusDays(1);
+		LocalDate onDayAfter = today.plusDays(1);
+		
 		try {
-			List<BillingInfo> membersDueYesterday = billingInfoRepo.findByDueDate(oneDayBefore);
+			List<BillingInfo> membersOverDue = billingInfoRepo.findByDueDate(onDayBefore);
 			List<BillingInfo> membersDueToday = billingInfoRepo.findByDueDate(today);
-			List<BillingInfo> membersDueTomorrow = billingInfoRepo.findByDueDate(oneDayAfter);
+			List<BillingInfo> membersDueTomorrow = billingInfoRepo.findByDueDate(onDayAfter);
 
 			// 1st Reminder (Before Day)
-			if (ObjectUtils.isNotEmpty(membersDueYesterday)) {
+			if (ObjectUtils.isNotEmpty(membersDueTomorrow)) {
 				List<Member> memberResp = new ArrayList<>();
-				for (BillingInfo billingInfoObj : membersDueYesterday) {
+				for (BillingInfo billingInfoObj : membersDueTomorrow) {
 					memberResp.add(memberRepo.findByIdAndStatus(billingInfoObj.getMemberId()));
 				}
 				log.info("1st Reminder (Before Day)");
-				log.info("MemberResponse >>>>" + memberResp.toString());
-
+				
 				Map<UUID, Member> memberMap = memberResp.stream()
 						.collect(Collectors.toMap(Member::getId, Function.identity()));
 
-				log.info("memberMap >>>>" + memberMap);
-
-				membersDueYesterday.forEach(billingInfo -> sendReminderEmail(memberMap.get(billingInfo.getMemberId()),
+				membersDueTomorrow.forEach(billingInfo -> sendReminderEmail(memberMap.get(billingInfo.getMemberId()),
 						"BFIT GYM - Payment Reminder: Due Tomorrow!",
-						"Dear " + memberMap.get(billingInfo.getMemberId()).getMemberName()
-								+ ",\nYour gym fee is due tomorrow (" + billingInfo.getDueDate() + "). Your due amt is "
-								+ billingInfo.getBalanceAmount() + "Rs. Please make your payment."));
+						"<html>" + "<body style='font-family: Arial, sans-serif;'>" + "<p>Dear <strong>"
+								+ memberMap.get(billingInfo.getMemberId()).getMemberName() + "</strong>,</p>"
+								+ "<p>Your gym fee is due tomorrow (<strong>" + billingInfo.getDueDate()
+								+ "</strong>).</p>" + "<p>Your due amount is <strong style='color: #d9534f;'>"
+								+ billingInfo.getBalanceAmount() + " Rs</strong>.</p>"
+								+ "<p>Please make your payment at the earliest.</p>" + "<br>" + "<p>Best Regards,</p>"
+								+ "<p><strong>BFIT GYM</strong></p>" + "</body>" + "</html>"));
 			}
 
 			// 2nd Reminder (On Day)
@@ -88,40 +85,41 @@ public class EmailReminderService implements EmailRemService {
 					memberResp.add(memberRepo.findByIdAndStatus(billingInfoObj.getMemberId()));
 				}
 				log.info("2nd Reminder (On Day)");
-				log.info("MemberResponse >>>>" + memberResp.toString());
-
+				
 				Map<UUID, Member> memberMap = memberResp.stream()
 						.collect(Collectors.toMap(Member::getId, Function.identity()));
-
-				log.info("memberMap >>>>" + memberMap);
 
 				membersDueToday.forEach(billingInfo -> sendReminderEmail(memberMap.get(billingInfo.getMemberId()),
 						"BFIT GYM - Payment Due Today!",
-						"Dear " + memberMap.get(billingInfo.getMemberId()).getMemberName()
-								+ ",Your gym fee is due today (" + billingInfo.getDueDate() + "). Your due amt is "
-								+ billingInfo.getBalanceAmount() + "Rs. Please make your payment."));
+						"<html>" + "<body style='font-family: Arial, sans-serif;'>" + "<p>Dear <strong>"
+								+ memberMap.get(billingInfo.getMemberId()).getMemberName() + "</strong>,</p>"
+								+ "<p>Your gym fee is due today (<strong>" + billingInfo.getDueDate()
+								+ "</strong>).</p>" + "<p>Your due amount is <strong style='color: #d9534f;'>"
+								+ billingInfo.getBalanceAmount() + " Rs</strong>.</p>"
+								+ "<p>Please make your payment.</p>" + "<br>" + "<p>Best Regards,</p>"
+								+ "<p><strong>BFIT GYM</strong></p>" + "</body>" + "</html>"));
 			}
 
 			// 3rd Reminder (After Day)
-			if (ObjectUtils.isNotEmpty(membersDueTomorrow)) {
+			if (ObjectUtils.isNotEmpty(membersOverDue)) {
 				List<Member> memberResp = new ArrayList<>();
-				for (BillingInfo billingInfoObj : membersDueTomorrow) {
+				for (BillingInfo billingInfoObj : membersOverDue) {
 					memberResp.add(memberRepo.findByIdAndStatus(billingInfoObj.getMemberId()));
 				}
 				log.info("3rd Reminder (After Day)");
-				log.info("MemberResponse >>>>" + memberResp.toString());
-
+				
 				Map<UUID, Member> memberMap = memberResp.stream()
 						.collect(Collectors.toMap(Member::getId, Function.identity()));
-
-				log.info("memberMap >>>>" + memberMap);
-
-				membersDueTomorrow.forEach(billingInfo -> sendReminderEmail(memberMap.get(billingInfo.getMemberId()),
+				
+				membersOverDue.forEach(billingInfo -> sendReminderEmail(memberMap.get(billingInfo.getMemberId()),
 						"BFIT GYM - Final Reminder: Payment Overdue!",
-						"Dear " + memberMap.get(billingInfo.getMemberId()).getMemberName()
-								+ ",Your gym fee was due on (" + billingInfo.getDueDate() + ").Your due amt is "
-								+ billingInfo.getBalanceAmount()
-								+ "Rs. Please pay immediately to avoid service disruption."));
+						"<html>" + "<body style='font-family: Arial, sans-serif;'>" + "<p>Dear <strong>"
+								+ memberMap.get(billingInfo.getMemberId()).getMemberName() + "</strong>,</p>"
+								+ "<p>Your gym fee was due on (<strong>" + billingInfo.getDueDate() + "</strong>).</p>"
+								+ "<p>Your due amount is <strong style='color: #d9534f;'>"
+								+ billingInfo.getBalanceAmount() + " Rs</strong>.</p>"
+								+ "<p>Please pay immediately to avoid service disruption.</p>" + "<br>"
+								+ "<p>Best Regards,</p>" + "<p><strong>BFIT GYM</strong></p>" + "</body>" + "</html>"));
 			}
 
 			return new ApiResponse(HttpStatus.OK, "Reminder email sent", false);
