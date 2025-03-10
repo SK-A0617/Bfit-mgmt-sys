@@ -76,13 +76,14 @@ public class MemberServiceImpl implements MemberService {
 		var dueDate = joiningDate.plusMonths(1);
 		var categoryPrice = Constants.GENERAL_CAT_AMT;
 		var paymentStatus = "";
+		var balanceAmt = 0;
 		var createdAt = new Timestamp(System.currentTimeMillis());
 		if (memberRequest.getCategory().equalsIgnoreCase(Constants.CARDIO_CATEGORY)) {
 			categoryPrice = Constants.CARDIO_CAT_AMT;
 		} else if (memberRequest.getCategory().equalsIgnoreCase(Constants.GENERAL_AND_CARDIO_CATEGORY)) {
 			categoryPrice = Constants.GENERAL_AND_CARDIO_CAT_AMT;
 		}
-		var balanceAmt = categoryPrice - memberRequest.getPaidAmount();
+		balanceAmt = categoryPrice - memberRequest.getPaidAmount();
 		if (balanceAmt != 0) {
 			paymentStatus = Constants.YET_TO_BE_PAID;
 		} else {
