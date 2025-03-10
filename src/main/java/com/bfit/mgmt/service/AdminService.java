@@ -42,4 +42,12 @@ public interface AdminService {
 	 */
 	ApiResponse getAdminList();
 	
+	/**
+	 * Login Activity
+	 * @param email
+	 * @param password
+	 * @return
+	 */
+	ApiResponse signIn(String email, String password);
+	
 }
