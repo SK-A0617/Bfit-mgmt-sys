@@ -134,4 +134,23 @@ public class AdminServiceImpl implements AdminService {
 		return new ApiResponse(HttpStatus.BAD_REQUEST, "Error while getting list of data", true);
 	}
 
+	@Override
+	public ApiResponse signIn(String email, String password) {
+		try {
+			if (ObjectUtils.isEmpty(email)) {
+				throw new ParameterMissingException("Email is missing");
+			}
+			if(ObjectUtils.isEmpty(password)) {
+				throw new ParameterMissingException("Password is missing");
+			}
+			var isAlive = adminRepo.getByEmail(email, password);
+			if(isAlive!=null) {
+				return new ApiResponse(HttpStatus.OK, "Login Successfully", false);
+			}
+		} catch (Exception e) {
+			log.error("Failed while getting admin credentials", e);
+		}
+		return new ApiResponse(HttpStatus.BAD_REQUEST, "Invalid Email or Password", true);
+	}
+
 }
